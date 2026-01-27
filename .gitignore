@@ -1,5 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Node / Next.js
+
 # dependencies
 /node_modules
 /.pnp
@@ -39,3 +41,23 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# Tauri / Rust
+
+# Rust build output
+/src-tauri/target
+/target
+
+# Tauri bundles
+/src-tauri/dist
+/src-tauri/bundle
+
+# Generated files (safe to ignore)
+src-tauri/gen
+
+# Editor / OS
+
+.vscode/
+.idea/
+*.swp
