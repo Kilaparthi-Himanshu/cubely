@@ -8,7 +8,6 @@ export const SelectMenu = ({
     items: string[] | null
     setInstanceVersion: React.Dispatch<React.SetStateAction<string | null>>
 }) => {
-    const inputRef = useRef<HTMLInputElement | null>(null);
     const [selectMenuOpen, setSelectMenuOpen] = useState(false);
     const [selected, setSelected] = useState("Select A Version");
 
@@ -19,7 +18,6 @@ export const SelectMenu = ({
                 value={selected} 
                 readOnly 
                 onClick={() => setSelectMenuOpen(!selectMenuOpen)}
-                ref={inputRef}
             />
 
             <AnimatePresence>
@@ -47,5 +45,5 @@ export const SelectMenu = ({
                 }
             </AnimatePresence>
         </div>
-    )
+    );
 }
