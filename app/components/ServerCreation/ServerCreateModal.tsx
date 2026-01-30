@@ -110,14 +110,14 @@ export const ServerCreateModal = ({
                     <span className="text-2xl font-semibold">Create Server</span>
                 </div>
 
-                <div className="border-b border-amber-600 w-full" />
+                <div className="border-b border-[#fbbf24] w-full" />
 
                 <div className="w-full h-full flex flex-col gap-8 p-4 font-semibold overflow-y-auto">
                     <div className="flex flex-col gap-3">
                         <span className="underline">Instance Name:</span>
 
                         <input 
-                            className="outline-0 border-2 focus:border-amber-500 transition-[border] corner-squircle rounded-[20px] p-2" 
+                            className="outline-0 border-2 focus:border-[#fbbf24] transition-[border] corner-squircle rounded-[20px] p-2" 
                             value={instanceName ?? ""}
                             onChange={(e) => setInstanceName(e.target.value)}
                         />

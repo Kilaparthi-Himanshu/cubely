@@ -28,7 +28,16 @@ export function RadioSelect<T extends string> ({
                 <FormControlLabel
                     key={opt.value}
                     value={opt.value}
-                    control={<Radio />}
+                    control={
+                        <Radio
+                            sx={{
+                                color: '#fff', // unchecked ring
+                                '&.Mui-checked': {
+                                color: '#fbbf24', // checked ring
+                                },
+                            }}
+                        />
+                    }
                     label={opt.label}
                     disabled={opt.disabled}
                 />

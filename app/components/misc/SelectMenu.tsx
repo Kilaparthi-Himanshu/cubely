@@ -32,7 +32,7 @@ export const SelectMenu = ({
     return (
         <div className="w-full relative z-999" ref={menuRef}>
             <input 
-                className="outline-0 border-2 focus:border-amber-500 transition-[border] corner-squircle rounded-[20px] p-2 cursor-pointer w-full" 
+                className="outline-0 border-2 focus:border-[#fbbf24] transition-[border] corner-squircle rounded-[20px] p-2 cursor-pointer w-full" 
                 value={selected} 
                 readOnly 
                 onClick={() => setSelectMenuOpen(!selectMenuOpen)}
@@ -41,7 +41,7 @@ export const SelectMenu = ({
             <AnimatePresence>
                 {selectMenuOpen && items &&
                     <motion.div 
-                        className="w-full max-h-60 overflow-y-scroll corner-l-squircle rounded-[20px] bg-cyan-900 absolute mt-2 app-scroll p-2"
+                        className="w-full max-h-60 overflow-y-scroll corner-l-squircle rounded-[20px] bg-cyan-900 absolute mt-2 app-scroll p-2 shadow-xl    "
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
