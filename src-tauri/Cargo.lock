@@ -3,6 +3,25 @@
 version = 3
 
 [[package]]
+name = "Cubely"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "dirs",
+ "log",
+ "reqwest 0.13.1",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-log",
+ "tauri-plugin-os",
+ "tokio",
+ "uuid",
+ "window-vibrancy 0.7.1",
+]
+
+[[package]]
 name = "adler2"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -193,23 +212,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdeb9d870516001442e364c5220d3574d2da8dc765554b4a617230d33fa58ef5"
 dependencies = [
  "objc2",
-]
-
-[[package]]
-name = "blockhost"
-version = "0.1.0"
-dependencies = [
- "dirs",
- "log",
- "reqwest 0.13.1",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-log",
- "tauri-plugin-os",
- "tokio",
- "window-vibrancy 0.7.1",
 ]
 
 [[package]]
@@ -442,8 +444,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fac4744fb15ae8337dc853fee7fb3f4e48c0fbaa23d0afe49c447b4fab126118"
 dependencies = [
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "windows-link 0.2.1",
 ]
 

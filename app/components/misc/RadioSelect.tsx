@@ -1,15 +1,15 @@
 import { FormControlLabel, Radio, RadioGroup } from '@mui/material';
 
 type RadioOption<T extends string> = {
-  value: T;
-  label: string;
-  disabled?: boolean;
+    value: T;
+    label: string;
+    disabled?: boolean;
 };
 
 type RadioSelectProps<T extends string> = {
-  value: T | null;
-  options: readonly RadioOption<T>[];
-  onChange: (value: T) => void;
+    value: T | null;
+    options: readonly RadioOption<T>[];
+    onChange: (value: T) => void;
 };
 
 export function RadioSelect<T extends string> ({

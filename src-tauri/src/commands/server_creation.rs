@@ -1,14 +1,17 @@
 #![allow(dead_code, unused, unused_imports)]
 
+use chrono::Utc;
 use reqwest::Client;
 use serde::{Deserialize, Serialize, ser};
+use uuid::Uuid;
 use std::f32::consts::E;
 use std::fmt::format;
 use std::{fs, path::PathBuf};
 use std::process::Command;
 use serde_json::Value;
 
-use crate::utils::path::servers_dir;
+use crate::commands::server_management::ServerConfig;
+use crate::utils::path::{cleanup_empty_parent_dir, cleanup_server_dir, servers_dir};
 
 #[derive(Deserialize, Debug)]
 struct VersionDetails {
@@ -25,7 +28,7 @@ struct DownloadInfo {
     url: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum LoaderType {
     Vanilla,
@@ -40,7 +43,8 @@ pub struct CreateServerResult {
 }
 
 #[tauri::command]
-pub async fn create_server(name: String, version: String, loader: LoaderType) -> Result<CreateServerResult, String> {
+pub async fn create_server(name: String, version: String, loader: LoaderType, ram_gb: u8) -> Result<CreateServerResult, String> {
+
     let mut server_path = servers_dir();
     server_path.push(&version);
     server_path.push(&name);
@@ -51,19 +55,49 @@ pub async fn create_server(name: String, version: String, loader: LoaderType) ->
 
     fs::create_dir_all(&server_path).map_err(|e| e.to_string())?;
 
-    match loader {
-        LoaderType::Vanilla => {
-            create_vanilla_server(&name, &version, &server_path).await?
+    let result: Result<(), String> = async {
+        match loader {
+            LoaderType::Vanilla => {
+                create_vanilla_server(&name, &version, &server_path).await?
+            }
+            LoaderType::Fabric => {
+                create_fabric_server(&version, &server_path).await?
+            }
+            LoaderType::Forge => {
+                create_forge_server(&version, &server_path).await?
+            }
         }
-        LoaderType::Fabric => {
-            create_fabric_server(&version, &server_path).await?
+
+        // Write eula only after successful install
+        fs::write(server_path.join("eula.txt"), "eula=true\n").map_err(|e| e.to_string())?;
+
+        Ok(())
+    }.await;
+
+    if let Err(err) = result {
+        cleanup_server_dir(&server_path);
+
+        if let Some(version_dir) = server_path.parent() {
+            cleanup_empty_parent_dir(&version_dir.to_path_buf());
         }
-        LoaderType::Forge => {
-            create_forge_server(&version, &server_path).await?
-        }
+
+        return Err(err);
     }
 
-    fs::write(server_path.join("eula.txt"), "eula=true\n").map_err(|e| e.to_string())?;
+    let config = ServerConfig {
+        id: Uuid::new_v4().to_string(),
+        name: name.to_string(),
+        version: version.to_string(),
+        loader,
+        ram_gb,
+        path: server_path.to_string_lossy().to_string(),
+        created_at: Utc::now().timestamp(),
+    };
+
+    fs::write(
+        server_path.join("cubely.json"),
+        serde_json::to_string_pretty(&config).unwrap()
+    ).map_err(|e| e.to_string())?;
 
     Ok(CreateServerResult { 
         success: true, 
@@ -188,6 +222,8 @@ pub async fn create_fabric_server(version: &str, server_path: &PathBuf) -> Resul
         return Err("Fabric installer failed".into());
     }
 
+    fs::remove_file(installer_path).ok();
+
     Ok(())
 }
 
@@ -241,6 +277,8 @@ pub async fn create_forge_server(version: &str, server_path: &PathBuf) -> Result
         return Err("Forge installer failed".into());
     }
 
+    fs::remove_file(installer_path).ok();
+
     Ok(())
 }
 
@@ -266,7 +304,6 @@ async fn resolve_latest_forge_build(version: &str) -> Result<String, String> {
             let mc_version = parts[0];
 
             if mc_version == version {
-                println!("{}", full);
                 return Ok(full)
             }
         }

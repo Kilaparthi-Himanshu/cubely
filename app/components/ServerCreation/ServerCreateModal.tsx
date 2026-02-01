@@ -2,13 +2,16 @@ import { AnimatePresence, motion } from "framer-motion"
 import { useEffect, useState } from "react";
 import { SelectMenu } from "../misc/SelectMenu";
 import DiscreteSlider from "../misc/Slider";
-import { useSupportedLoaders } from "@/app/utils/useSupportedLoaders";
+import { useSupportedLoaders } from "@/app/hooks/useSupportedLoaders";
 import { useAtomValue } from "jotai";
 import { isMacAtom } from "@/app/atoms";
 import { RadioSelect } from "../misc/RadioSelect";
 import { IoCloseCircle } from "react-icons/io5";
-import { createServer } from "@/app/utils/createServer";
+import { createServer } from "@/app/utils/server/createServer";
 import { notifyError, notifySuccess } from "@/app/utils/alerts";
+import { isValidInstanceName } from "@/app/utils/regexValidator";
+import { LoaderRenderer } from "../misc/Loader";
+import { refreshServers } from "@/app/utils/server/refreshServers";
 
 export type LoaderType = "vanilla" | "fabric" | "forge";
 export type SupportedLoadersType = {
@@ -16,6 +19,8 @@ export type SupportedLoadersType = {
     fabric: boolean;
     forge: boolean;
 }
+
+const INSTANCE_NAME_REGEX = /^[a-zA-Z0-9_-]+$/;
 
 export const ServerCreateModal = ({ 
     setIsOpen, 
@@ -41,6 +46,7 @@ export const ServerCreateModal = ({
     const [supportedLoaders, setSupportedLoaders] = useState<SupportedLoadersType | null>(null);
     const [loadingLoaders, setLoadingLoaders] = useState(false);
     const [ramGB, setRamGB] = useState<number>(2);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         function convertVersionList() {
@@ -80,18 +86,27 @@ export const ServerCreateModal = ({
 
     const handleCreateServer = async () => {
         try {
+            setLoading(true);
+
             if (!instanceName) {
-                notifyError("Server Instance Name Is Required!");
+                notifyError("Server instance name is required!");
+                return;
+            }
+
+            if (!isValidInstanceName(INSTANCE_NAME_REGEX, instanceName)) {
+                notifyError(
+                    "Instance name can only contain letters, numbers, '-' and '_' (no spaces or special characters)"
+                );
                 return;
             }
 
             if (!instanceVersion) {
-                notifyError("Server Version Is Required!");
+                notifyError("Server version is required!");
                 return;
             }
 
             if (!selectedLoader) {
-                notifyError("Loader Type Is Required!");
+                notifyError("Loader type is required!");
                 return;
             }
 
@@ -99,14 +114,21 @@ export const ServerCreateModal = ({
                 name: instanceName!,
                 version: instanceVersion!,
                 loader: selectedLoader!,
-                ramGB
+                ramGb: ramGB!
             });
 
+            await refreshServers();
+
             notifySuccess({
-                message: "Server Created Successfully!"
-            })
+                message: "Server Created Successfully!",
+                onClose: () => setIsOpen(false),
+                hideProgressBar: false
+            });
         } catch (err) {
-            console.error(err);
+            notifyError("An error occured while creating the server. Please try again!");
+            console.error("Create server failed:", err);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -123,16 +145,18 @@ export const ServerCreateModal = ({
             // }}
         >
             <motion.div 
-                className={`w-110 h-max bg-gray-800 corner-squircle rounded-[30px] flex flex-col items-center ${isMac && 'rounded-xl'} relative`}
+                className={`w-110 h-max bg-gray-800 corner-squircle rounded-[30px] flex flex-col items-center ${isMac && 'rounded-xl'} relative max-h-[calc(100vh-50px)] overflow-hidden`}
                 onClick={(e) => e.stopPropagation()}
                 initial={{ y: -10 }}
                 animate={{ y: 0 }}
                 exit={{ y: -10 }}
                 transition={{ duration: 0.2 }}
             >
+                {(loadingLoaders || loading) && <LoaderRenderer />}
+
                 <IoCloseCircle 
                     size={30} 
-                    className="absolute right-2 top-2 cursor-pointer text-red-500  hover:scale-120 transition-[scale]" 
+                    className="absolute right-2 top-2 cursor-pointer text-red-500 hover:scale-120 transition-[scale]" 
                     title="Close"
                     onClick={(e) => {
                         e.preventDefault();
@@ -155,6 +179,10 @@ export const ServerCreateModal = ({
                             value={instanceName ?? ""}
                             onChange={(e) => setInstanceName(e.target.value)}
                         />
+
+                        <span className="text-xs text-gray-400">
+                            Allowed: letters, numbers, - and _
+                        </span>
                     </div>
 
                     <div className="flex flex-col gap-3">

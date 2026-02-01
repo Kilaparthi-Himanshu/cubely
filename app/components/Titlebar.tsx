@@ -29,33 +29,24 @@ export const Titlebar = () => {
         }
     }, []);
 
-    const dragStyle = {
-        WebkitAppRegion: "drag",
-    } as React.CSSProperties & { WebkitAppRegion: "drag" };
-
-    const noDrag = {
-        WebkitAppRegion: "no-drag",
-    } as React.CSSProperties & { WebkitAppRegion: "no-drag" };
-
     return (
         <div 
-            className="w-full bg-linear-60 from-blue-300 to-green-300 h-8.75 flex items-center justify-between"
+            className="w-full bg-linear-60 from-blue-300 to-neutral-950 h-8.75 flex items-center justify-between"
             data-tauri-drag-region
-            style={dragStyle}
         >
             <div className={`${isMac && "ml-18.75"} text-violet-700 font-semibold font-mono select-none px-2`}>
-                BlockHost
+                Cubely
             </div>
 
             {!isMac && 
-                <div className="flex text-neutral-900 h-full" style={noDrag}>
-                    <button onClick={() => appWindow?.minimize()} className="h-full w-10 flex items-center justify-center cursor-pointer hover:bg-cyan-500">
+                <div className="flex text-neutral-900 h-full">
+                    <button onClick={() => appWindow?.minimize()} className="h-full w-10 flex items-center justify-center cursor-pointer hover:bg-cyan-500 text-white">
                         <GoDash size={20} />
                     </button>
-                    <button onClick={() => appWindow?.toggleMaximize()} className="h-full w-10 flex items-center justify-center cursor-pointer hover:bg-cyan-500">
+                    <button onClick={() => appWindow?.toggleMaximize()} className="h-full w-10 flex items-center justify-center cursor-pointer hover:bg-cyan-500 text-white">
                         {isMaximized ? <VscChromeRestore size={20} /> : <VscChromeMaximize size={20} />}
                     </button>
-                    <button onClick={() => appWindow?.close()} className="h-full w-10 flex items-center justify-center cursor-pointer hover:bg-red-500">
+                    <button onClick={() => appWindow?.close()} className="h-full w-10 flex items-center justify-center cursor-pointer hover:bg-red-500 text-white">
                         <IoClose size={20} />
                     </button>
                 </div>

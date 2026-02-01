@@ -1,5 +1,5 @@
 [package]
-name = "blockhost"
+name = "Cubely"
 version = "0.1.0"
 description = "A Tauri App"
 authors = ["you"]
@@ -28,3 +28,5 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 dirs = "6.0.0"
 tauri-plugin-os = "2"
 window-vibrancy = "0.7.1"
+uuid = { version = "1", features = ["v4"] }
+chrono = "0.4.43"
