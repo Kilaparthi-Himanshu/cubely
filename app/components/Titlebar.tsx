@@ -23,7 +23,6 @@ export const Titlebar = () => {
         const unlisten = win.onResized(() => {
             win.isMaximized().then(setIsMaximized);
         });
-
         return () => {
             unlisten.then((f) => f());
         }
@@ -40,13 +39,13 @@ export const Titlebar = () => {
 
             {!isMac && 
                 <div className="flex text-neutral-900 h-full">
-                    <button onClick={() => appWindow?.minimize()} className="h-full w-10 flex items-center justify-center cursor-pointer hover:bg-cyan-500 text-white">
+                    <button onClick={() => appWindow?.minimize()} className="h-full w-10 flex items-center justify-center cursor-pointer hover:bg-cyan-700 text-white">
                         <GoDash size={20} />
                     </button>
-                    <button onClick={() => appWindow?.toggleMaximize()} className="h-full w-10 flex items-center justify-center cursor-pointer hover:bg-cyan-500 text-white">
+                    <button onClick={() => appWindow?.toggleMaximize()} className="h-full w-10 flex items-center justify-center cursor-pointer hover:bg-cyan-700 text-white">
                         {isMaximized ? <VscChromeRestore size={20} /> : <VscChromeMaximize size={20} />}
                     </button>
-                    <button onClick={() => appWindow?.close()} className="h-full w-10 flex items-center justify-center cursor-pointer hover:bg-red-500 text-white">
+                    <button onClick={() => appWindow?.close()} className="h-full w-10 flex items-center justify-center cursor-pointer hover:bg-red-700 text-white">
                         <IoClose size={20} />
                     </button>
                 </div>

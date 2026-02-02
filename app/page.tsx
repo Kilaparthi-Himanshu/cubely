@@ -36,7 +36,6 @@ export default function Home() {
         async function loadServers() {
             const servers = await invoke<ServerConfig[]>('list_servers');
             setServers(servers);
-            console.log(servers);
         }
 
         loadServers();

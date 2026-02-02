@@ -12,6 +12,8 @@ use crate::commands::versions_loaders::get_mc_versions;
 use crate::commands::versions_loaders::get_supported_loaders;
 use crate::commands::server_creation::create_server;
 use crate::commands::server_management::list_servers;
+use crate::commands::server_management::read_server_properties;
+use crate::commands::server_management::write_server_properties;
 use crate::state::app_state::AppState;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -54,7 +56,9 @@ pub fn run() {
             create_server,
             get_mc_versions,
             get_supported_loaders,
-            list_servers
+            list_servers,
+            read_server_properties,
+            write_server_properties
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

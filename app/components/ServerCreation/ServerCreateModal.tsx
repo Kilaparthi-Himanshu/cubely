@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { SelectMenu } from "../misc/SelectMenu";
 import DiscreteSlider from "../misc/Slider";
@@ -153,7 +153,7 @@ export const ServerCreateModal = ({
                 exit={{ y: -10 }}
                 transition={{ duration: 0.2 }}
             >
-                {(loadingLoaders || loading) && <LoaderRenderer />}
+                {(loadingLoaders || loading) && <LoaderRenderer text="Creating Server..." />}
 
                 <IoCloseCircle 
                     size={30} 
