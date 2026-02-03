@@ -6,6 +6,7 @@ import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
 import { IoCloseCircle } from "react-icons/io5";
 import { Loader } from "../misc/Loader";
+import { SwitchToggle } from "../misc/Switch";
 
 type ServerProperties = {
     motd: string
@@ -55,6 +56,8 @@ export const ServerSettingsModal = ({
         setForm(prev => {
             if (!prev) return prev;
 
+            console.log(prev);
+
             return {
                 ...prev,
                 [key]: value
@@ -77,7 +80,7 @@ export const ServerSettingsModal = ({
             // }}
         >
             <motion.div 
-                className={`w-190 h-full bg-gray-800 corner-squircle rounded-[30px] flex flex-col items-center ${isMac && 'rounded-xl'} relative max-h-[calc(100vh-50px)] overflow-hidden`}
+                className={`w-160 h-full bg-gray-800 corner-squircle rounded-[30px] flex flex-col items-center ${isMac && 'rounded-xl'} relative max-h-[calc(100vh-50px)] overflow-hidden`}
                 onClick={(e) => e.stopPropagation()}
                 initial={{ y: -10 }}
                 animate={{ y: 0 }}
@@ -99,9 +102,9 @@ export const ServerSettingsModal = ({
 
                     <div className="border-b border-[#fbbf24] w-full" />
 
-                     <div className="w-full h-full flex flex-col gap-8 p-4 font-semibold overflow-y-auto overflow-x-hidden app-scroll">
+                    <div className="w-full h-full flex flex-col gap-8 p-4 font-semibold overflow-y-auto overflow-x-hidden app-scroll">
                         <div className="flex flex-col gap-3">
-                            <span className="underline">Message Of The Day:</span>
+                            <span>Message Of The Day:</span>
 
                             <textarea
                                 className="outline-0 border-2 focus:border-[#fbbf24] transition-[border] corner-squircle rounded-[20px] p-2 min-h-11 h-11 max-h-50 app-scroll" 
@@ -114,7 +117,29 @@ export const ServerSettingsModal = ({
                                 }}
                             />
                         </div>
-                     </div>
+
+                        <div className="flex flex-row gap-5">
+                            <div className="flex gap-3 h-max">
+                                <span>Online Mode:</span>
+
+                                <SwitchToggle 
+                                    checked={form.online_mode}
+                                    onChange={(e) => updateField("online_mode", e.target.checked)}
+                                />
+                            </div>
+
+                            <div className="h-full border-l-3 border-[#fbbf24]" />
+
+                            <div className="flex gap-3 h-max">
+                                <span>PVP:</span>
+
+                                <SwitchToggle 
+                                    checked={form.pvp}
+                                    onChange={(e) => updateField("pvp", e.target.checked)}
+                                />
+                            </div>
+                        </div>
+                    </div>
             </motion.div>
         </motion.div>
     );
