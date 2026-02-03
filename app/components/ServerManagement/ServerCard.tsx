@@ -33,7 +33,7 @@ export const ServerCard = ({
                 <ServerSettingsModal setIsOpen={setServerSettingsModalOpen} server={server} />
             </ModalRenderer>
 
-            <div className={`w-50 h-65 corner-squircle bg-neutral-800 flex flex-col overflow-hidden cursor-pointer relative ${isMac ? 'rounded-[30px]' : ' rounded-[50px]'}`}>
+            <div className={`w-50 h-65 corner-squircle bg-neutral-800 flex flex-col overflow-hidden cursor-pointer relative shadow-md ${isMac ? 'rounded-[30px]' : ' rounded-[50px]'}`}>
                 <div className="absolute inset-0 flex flex-col pointer-events-none">
                     <button 
                         className="flex-1 flex items-center justify-center opacity-0 hover:opacity-100 bg-green-500/90 transition-opacity duration-150 cursor-pointer pointer-events-auto group z-100"
@@ -64,19 +64,19 @@ export const ServerCard = ({
                     <div className="flex-1 p-2 px-4 flex flex-col justify-center text-white font-mono text-sm gap-1">
                         <p>
                             <span className="font-semibold">Name:</span>{" "}
-                            <span className="text-[#fbbf24]">{name}</span>
+                            <span className="text-amber-400">{name}</span>
                         </p>
                         <p>
                             <span className="font-semibold">Version:</span>{" "}
-                            <span className="text-[#fbbf24]">{version}</span>
+                            <span className="text-amber-400">{version}</span>
                         </p>
                         <p>
                             <span className="font-semibold">Loader:</span>{" "}
-                            <span className="text-[#fbbf24]">{loader.charAt(0).toUpperCase() + loader.slice(1)}</span>
+                            <span className="text-amber-400">{loader.charAt(0).toUpperCase() + loader.slice(1)}</span>
                         </p>
                         <p>
                             <span className="font-semibold">RAM:</span>{" "}
-                            <span className="text-[#fbbf24]">{ram_gb}</span><span className="text-blue-300"> GB</span>
+                            <span className="text-amber-400">{ram_gb}</span><span className="text-blue-300"> GB</span>
                         </p>
                     </div>
                 </div>

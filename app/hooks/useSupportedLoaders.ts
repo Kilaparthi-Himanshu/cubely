@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { LoaderType, SupportedLoadersType } from "../components/ServerCreation/ServerCreateModal";
+import { LoaderType, SupportedLoadersType } from "../components/ServerManagement/ServerCreateModal";
 import { invoke } from "@tauri-apps/api/core";
 
 export function useSupportedLoaders({

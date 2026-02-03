@@ -3,14 +3,16 @@ import { useEffect, useRef, useState } from "react"
 
 export const SelectMenu = ({
     items,
-    setInstanceVersion
+    value,
+    onChange,
+    placeholder = "Select"
 }: {
-    items: string[] | null
-    setInstanceVersion: React.Dispatch<React.SetStateAction<string | null>>
+    items: string[]
+    value: string
+    onChange: (value: string) => void
+    placeholder?: string
 }) => {
-    const [selectMenuOpen, setSelectMenuOpen] = useState(false);
-    const [selected, setSelected] = useState("Select A Version");
-
+    const [open, setOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
@@ -19,7 +21,7 @@ export const SelectMenu = ({
                 menuRef.current &&
                 !menuRef.current.contains(event.target as Node)
             ) {
-                setSelectMenuOpen(false);
+                setOpen(false);
             }
         };
 
@@ -32,16 +34,16 @@ export const SelectMenu = ({
     return (
         <div className="w-full relative z-999" ref={menuRef}>
             <input 
-                className="outline-0 border-2 focus:border-[#fbbf24] transition-[border] corner-squircle rounded-[20px] p-2 cursor-pointer w-full" 
-                value={selected} 
+                className="outline-0 border-2 focus:border-amber-400 transition-[border] corner-squircle rounded-[20px] p-2 cursor-pointer w-full capitalize" 
+                value={value || placeholder}
                 readOnly 
-                onClick={() => setSelectMenuOpen(!selectMenuOpen)}
+                onClick={() => setOpen(!open)}
             />
 
             <AnimatePresence>
-                {selectMenuOpen && items &&
+                {open && items &&
                     <motion.div 
-                        className="w-full max-h-60 overflow-y-scroll corner-squircle rounded-[20px] bg-cyan-900 absolute mt-2 app-scroll p-2 shadow-2xl"
+                        className="w-full max-h-60 overflow-y-auto corner-squircle rounded-[20px] bg-cyan-900 absolute mt-2 app-scroll p-2 shadow-2xl"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
@@ -51,12 +53,11 @@ export const SelectMenu = ({
                             <div key={item} 
                                 className="w-full h-10 p-2 hover:bg-gray-900 transition-[background] duration-100 cursor-pointer corner-squircle rounded-[20px]"
                                 onClick={() => {
-                                    setSelected(item);
-                                    setInstanceVersion(item);
-                                    setSelectMenuOpen(false);
+                                    onChange(item);
+                                    setOpen(false);
                                 }}
                             >
-                                <span className="cursor-pointer">{item}</span>
+                                <span className="cursor-pointer capitalize">{item}</span>
                             </div>
                         )}
                     </motion.div>

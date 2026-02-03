@@ -1,11 +1,11 @@
 'use client';
 
 import { invoke } from "@tauri-apps/api/core";
-import { ServerCard } from "./components/ServerCreation/ServerCard";
-import { ServerCreateCard } from "./components/ServerCreation/ServerCreateCard";
+import { ServerCard } from "./components/ServerManagement/ServerCard";
+import { ServerCreateCard } from "./components/ServerManagement/ServerCreateCard";
 import ModalRenderer from "./components/ModalRenderer";
 import { useEffect, useMemo, useState } from "react";
-import { ServerCreateModal } from "./components/ServerCreation/ServerCreateModal";
+import { ServerCreateModal } from "./components/ServerManagement/ServerCreateModal";
 import { ServerConfig, serversAtom } from "./atoms";
 import { useAtom, useAtomValue } from "jotai";
 

@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { LoaderType } from "@/app/components/ServerCreation/ServerCreateModal";
+import { LoaderType } from "@/app/components/ServerManagement/ServerCreateModal";
 
 type CreateServerInput = {
     name: string;

@@ -19,11 +19,11 @@ export const SwitchToggle = styled((props: SwitchProps) => (
         transform: 'translateX(16px)',
         color: '#fff',
         '& + .MuiSwitch-track': {
-            backgroundColor: '#fbbf24',
+            backgroundColor: '#ffba00',
             opacity: 1,
             border: 0,
             ...theme.applyStyles('dark', {
-            backgroundColor: '#fbbf24',
+            backgroundColor: '#ffba00',
             }),
         },
         '&.Mui-disabled + .MuiSwitch-track': {

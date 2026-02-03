@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { LoaderType } from "./components/ServerCreation/ServerCreateModal";
+import { LoaderType } from "./components/ServerManagement/ServerCreateModal";
 
 export type ServerConfig = {
     id: string,
