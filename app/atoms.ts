@@ -11,6 +11,13 @@ export type ServerConfig = {
     created_at: number,
 }
 
+export type ActiveServer = {
+    server_id: string,
+    // public_url: string,
+}
+
 export const isMacAtom = atom<boolean | null>(null);
 
 export const serversAtom = atom<ServerConfig[] | null>(null);
+
+export const activeServerAtom = atom<ActiveServer | null>(null);

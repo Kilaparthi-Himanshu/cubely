@@ -34,15 +34,15 @@ export const ServerSettingsModal = ({
     const DIFFICULTIES = ["peaceful", "easy", "normal", "hard"];
 
     const isMac = useAtomValue(isMacAtom);
-    const [form, setForm] = useState<ServerProperties | null>(null);
+    const [properties, setProperties] = useState<ServerProperties | null>(null);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         async function getServerProperties() {
             try {
-                const props = await readServerProperties(server);
+                const props = await readServerProperties(server.path);
                 if (props) {
-                    setForm(props);
+                    setProperties(props);
                 }
             } catch(err) {
                 console.error(err);
@@ -57,7 +57,7 @@ export const ServerSettingsModal = ({
         key: K,
         value: ServerProperties[K]
     ) => {
-        setForm(prev => {
+        setProperties(prev => {
             if (!prev) return prev;
 
             return {
@@ -79,9 +79,9 @@ export const ServerSettingsModal = ({
         min: number,
         max: number
     ) => {
-        if (!form) return;
+        if (!properties) return;
 
-        updateField(key, clamp(form[key] as number, min, max));
+        updateField(key, clamp(properties[key] as number, min, max));
     }
 
     const clamp = (value: number, min: number, max: number) => {
@@ -92,16 +92,16 @@ export const ServerSettingsModal = ({
         try {
             setLoading(true);
 
-            if (!form?.motd) {
+            if (!properties?.motd) {
                 notifyError("Message of the day can't be empty!");
             }
 
-            if (!form) {
+            if (!properties) {
                 notifyError("An error has occured!");
                 return;
             }
 
-            await updateServerProperties(server, form);
+            await updateServerProperties(server, properties);
 
             await refreshServers();
 
@@ -120,10 +120,10 @@ export const ServerSettingsModal = ({
     }
 
     useEffect(() => {
-        console.log(form);
-    }, [form]);
+        console.log(properties);
+    }, [properties]);
 
-    if (!form) return <Loader />
+    if (!properties) return <Loader />
 
     return (
         <motion.div 
@@ -169,7 +169,7 @@ export const ServerSettingsModal = ({
 
                         <textarea
                             className="outline-0 border-2 focus:border-amber-400 transition-[border] corner-squircle rounded-[20px] p-2 min-h-11 h-11 max-h-50 app-scroll" 
-                            value={form.motd}
+                            value={properties.motd}
                             onChange={(e) => {
                                 updateField("motd", e.target.value)
 
@@ -185,13 +185,13 @@ export const ServerSettingsModal = ({
                                 <span>Online Mode:</span>
 
                                 <SwitchToggle 
-                                    checked={form.online_mode}
+                                    checked={properties.online_mode}
                                     onChange={(e) => updateField("online_mode", e.target.checked)}
                                 />
                             </div>
 
                             <span className="text-xs text-gray-400">
-                                {form.online_mode
+                                {properties.online_mode
                                     ? "Authenticates players with Mojang."
                                     : "Allows offline or cracked clients."}
                             </span>
@@ -204,13 +204,13 @@ export const ServerSettingsModal = ({
                                 <span>PVP:</span>
 
                                 <SwitchToggle 
-                                    checked={form.pvp}
+                                    checked={properties.pvp}
                                     onChange={(e) => updateField("pvp", e.target.checked)}
                                 />
                             </div>
 
                             <span className="text-xs text-gray-400">
-                                {form.pvp
+                                {properties.pvp
                                     ? "Players can damage each other."
                                     : "Player-vs-player combat disabled."}
                             </span>
@@ -222,19 +222,19 @@ export const ServerSettingsModal = ({
 
                         <input 
                             className="outline-0 border-2 focus:border-amber-400 transition-[border] corner-squircle rounded-[20px] p-2 w-1/2" 
-                            value={form.max_players ?? 20}
+                            value={properties.max_players ?? 20}
                             onChange={(e) => {console.log(Number(e.target.value)); updateField("max_players", Number(e.target.value))}}
                             type="number"
                             min="1"
                         />
 
                         <span className={`text-xs transition-colors ${
-                                form.max_players > 20
+                                properties.max_players > 20
                                     ? "text-amber-400"
                                     : "text-gray-400"
                                 }`}
                             >
-                                {form.max_players > 20
+                                {properties.max_players > 20
                                     ? "More players mean more chunks, mobs, and CPU usage."
                                     : "Default value is 20 players."
                                 }
@@ -247,7 +247,7 @@ export const ServerSettingsModal = ({
                         <div className="w-1/2">
                             <SelectMenu
                                 items={DIFFICULTIES}
-                                value={form.difficulty}
+                                value={properties.difficulty}
                                 onChange={(value) => updateField("difficulty", value)}
                                 placeholder="Select difficulty"
                             />
@@ -258,10 +258,10 @@ export const ServerSettingsModal = ({
                         </span>
 
                         <span className="text-sm text-amber-400">
-                            {form.difficulty === "peaceful" && "No hostile mobs. Hunger disabled."}
-                            {form.difficulty === "easy" && "Hostile mobs deal less damage."}
-                            {form.difficulty === "normal" && "Vanilla survival experience."}
-                            {form.difficulty === "hard" && "Mobs hit harder and hunger is unforgiving."}
+                            {properties.difficulty === "peaceful" && "No hostile mobs. Hunger disabled."}
+                            {properties.difficulty === "easy" && "Hostile mobs deal less damage."}
+                            {properties.difficulty === "normal" && "Vanilla survival experience."}
+                            {properties.difficulty === "hard" && "Mobs hit harder and hunger is unforgiving."}
                         </span>
                     </div>
 
@@ -270,7 +270,7 @@ export const ServerSettingsModal = ({
 
                         <input 
                             className="outline-0 border-2 focus:border-amber-400 transition-[border] corner-squircle rounded-[20px] p-2 w-1/2" 
-                            value={form.spawn_protection ?? 16}
+                            value={properties.spawn_protection ?? 16}
                             onChange={(e) => {
                                     console.log(Number(e.target.value)); 
                                     handleNumberChange("spawn_protection", e.target.value);
@@ -283,12 +283,12 @@ export const ServerSettingsModal = ({
                         />
 
                         <span className={`text-xs transition-colors ${
-                                form.spawn_protection > 16 || form.spawn_protection === 0
+                                properties.spawn_protection > 16 || properties.spawn_protection === 0
                                     ? "text-amber-400"
                                     : "text-gray-400"
                                 }`}
                             >
-                                {form.spawn_protection === 0
+                                {properties.spawn_protection === 0
                                     ? "Spawn protection disabled."
                                     : "Large values can block building near spawn."
                                 }
@@ -300,7 +300,7 @@ export const ServerSettingsModal = ({
 
                         <input 
                             className="outline-0 border-2 focus:border-amber-400 transition-[border] corner-squircle rounded-[20px] p-2 w-1/2" 
-                            value={form.view_distance ?? 10}
+                            value={properties.view_distance ?? 10}
                             onChange={(e) => {
                                     console.log(Number(e.target.value)); 
                                     handleNumberChange("view_distance", e.target.value);
@@ -323,13 +323,13 @@ export const ServerSettingsModal = ({
 
                         <input 
                             className="outline-0 border-2 focus:border-amber-400 transition-[border] corner-squircle rounded-[20px] p-2 w-1/2" 
-                            value={form.simulation_distance ?? 10}
+                            value={properties.simulation_distance ?? 10}
                             onChange={(e) => {
                                     console.log(Number(e.target.value)); 
                                     handleNumberChange("simulation_distance", e.target.value);
                                 }
                             }
-                            onBlur={() => handleNumberBlur("simulation_distance", 2, Math.min(32, form.view_distance))}
+                            onBlur={() => handleNumberBlur("simulation_distance", 2, Math.min(32, properties.view_distance))}
                             type="number"
                             min={2}
                             max={32}
@@ -340,7 +340,7 @@ export const ServerSettingsModal = ({
                             Controls how far players can see (in chunks).
                         </span>
 
-                        {form.simulation_distance > form.view_distance && (
+                        {properties.simulation_distance > properties.view_distance && (
                             <span className="text-sm text-red-400">
                                 Simulation distance cannot exceed view distance.
                             </span>
@@ -352,7 +352,7 @@ export const ServerSettingsModal = ({
 
                         <input 
                             className="outline-0 border-2 focus:border-amber-400 transition-[border] corner-squircle rounded-[20px] p-2 w-1/2" 
-                            value={form.server_port ?? 10}
+                            value={properties.server_port ?? 10}
                             onChange={(e) => {
                                     console.log(Number(e.target.value)); 
                                     handleNumberChange("server_port", e.target.value);
@@ -369,7 +369,7 @@ export const ServerSettingsModal = ({
                             Default Minecraft port is 25565.
                         </span>
 
-                        <span className={`text-sm ${form.server_port !== 25565 ? "text-amber-400" : "text-gray-400"} transition-colors`}>
+                        <span className={`text-sm ${properties.server_port !== 25565 ? "text-amber-400" : "text-gray-400"} transition-colors`}>
                             Non-default ports may require firewall or router changes.
                         </span>
                     </div>

@@ -1,8 +1,14 @@
-use std::{f32::consts::E, fs, path::PathBuf, process::Command};
+use std::{fs, path::PathBuf, process::Command};
 
 use serde::{Deserialize, Serialize};
 
 use crate::{commands::server_creation::LoaderType, state::app_state::AppState, utils::path::servers_dir};
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct TunnelConfig {
+    pub enabled: bool,
+    pub provider: String, // "ngrok"
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ServerConfig {
@@ -13,6 +19,9 @@ pub struct ServerConfig {
     pub ram_gb: u8,
     pub path: String,
     pub created_at: i64,
+
+    #[serde(default)]
+    pub tunnel: Option<TunnelConfig>
 }
 
 #[tauri::command]
@@ -47,6 +56,10 @@ pub fn list_servers() -> Result<Vec<ServerConfig>, String> {
 }
 
 use std::collections::HashMap;
+use std::process::{Child, Stdio};
+use serde_json::Value;
+use std::time::Duration;
+use std::thread::sleep;
 
 #[derive(Serialize, Deserialize)]
 pub struct ServerProperties {
@@ -132,19 +145,57 @@ pub async fn write_server_properties(
     Ok(())
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug)]
 pub struct ActiveServer {
     pub server_id: String,
-    pub mc_pid: u32,
-    pub ngrok_pid: u32,
-    pub public_url: String,
+    pub mc_child: Child,
+    pub ngrok_child: Option<Child>,
+    pub public_url: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ActiveServerInfo {
+    pub server_id: String,
+    pub public_url: Option<String>
 }
 
 #[tauri::command]
 pub fn get_active_server(
     state: tauri::State<'_, AppState>,
-) -> Option<ActiveServer> {
-    state.active_server.lock().unwrap().clone()
+) -> Option<ActiveServerInfo> {
+    let active = state.active_server.lock().unwrap();
+
+    active.as_ref().map(|s| ActiveServerInfo {
+        server_id: s.server_id.clone(),
+        public_url: s.public_url.clone(),
+    })
+}
+
+async fn start_ngrok(port: u16) -> Result<(Child, String), String> {
+    let child = Command::new("ngrok")
+        .args(["tcp", &port.to_string(), "--log=stdout"])
+        .stdout(Stdio::piped())
+        .spawn()
+        .map_err(|_| "Failed to start ngrok. Is it installed & authenticated?".to_string())?;
+
+    // Give ngrok time to boot
+    sleep(Duration::from_secs(2));
+
+    let tunnels: Value = reqwest::get("https://127.0.0.1:4040/api/tunnels")
+        .await
+        .map_err(|_| "Failed to connect to ngrok API".to_string())?
+        .json()
+        .await
+        .map_err(|_| "Failed to parse ngrok API response".to_string())?;
+
+    let public_url = tunnels["tunnels"]
+        .as_array()
+        .and_then(|t| t.first())
+        .and_then(|t| t["public_url"].as_str())
+        .ok_or("No ngrok tunnel found")?
+        .to_string();
+
+    Ok((child, public_url))
 }
 
 #[tauri::command]
@@ -152,11 +203,14 @@ pub async fn start_server(
     server: ServerConfig,
     state: tauri::State<'_, AppState>,
 ) -> Result<(), String> {
-    let mut active = state.active_server.lock().unwrap();
+    // check state synchronously
+    { 
+        let mut active = state.active_server.lock().unwrap();
 
-    if active.is_some() {
-        return Err("A server is already running".into());
-    }
+        if active.is_some() {
+            return Err("A server is already running".into());
+        }
+    } // <- mutex guard DROPPED here
 
     // spawn minecraft
     let mc_child = Command::new("java")
@@ -168,20 +222,30 @@ pub async fn start_server(
             "nogui".into(),
         ])
         .current_dir(&server.path)
+        .stdin(std::process::Stdio::piped())
         .spawn()
         .map_err(|e| e.to_string())?;
 
-    // spawn ngrok
-    let ngrok_child = Command::new("java")
-        .args(["tcp", "localhost:25565"])
-        .spawn()
-        .map_err(|e| e.to_string())?;
+    let mut ngrok_child = None;
+    let mut public_url = None;
 
+    if let Some(tunnel) = &server.tunnel {
+        if tunnel.enabled && tunnel.provider == "ngrok" {
+            // Async rule: never hold std::sync::MutexGuard across .await
+            // The future must be Send (Tauri requirement)
+            // Drop active_server mutex before awaiting — MutexGuard is not Send
+            let (child, url) = start_ngrok(25565).await?;
+            ngrok_child = Some(child);
+            public_url = Some(url);
+        }
+    }
+
+    let mut active = state.active_server.lock().unwrap();
     *active = Some(ActiveServer { 
         server_id: server.id.clone(), 
-        mc_pid: mc_child.id(), 
-        ngrok_pid: ngrok_child.id(), 
-        public_url: "pending...".into() // fill after API fetch
+        mc_child,
+        ngrok_child,
+        public_url
     });
 
     Ok(())
@@ -193,9 +257,19 @@ pub fn stop_server(
 ) -> Result<(), String> {
     let mut active = state.active_server.lock().unwrap();
 
-    if let Some(server) = active.take() {
-        let _ = Command::new("kill").arg(server.mc_pid.to_string()).status();
-        let _ = Command::new("kill").arg(server.ngrok_pid.to_string()).status();
+    if let Some(mut server) = active.take() {
+        if let Some(stdin) = server.mc_child.stdin.as_mut() {
+            use std::io::Write;
+            stdin.write_all(b"stop\n").ok();
+        }
+
+        // wait for clean shutdown
+        server.mc_child.wait().ok();
+
+        if let Some(mut ngrok) = server.ngrok_child {
+            ngrok.kill().ok();
+        }
+
         Ok(())
     } else {
         Err("No active server".into())

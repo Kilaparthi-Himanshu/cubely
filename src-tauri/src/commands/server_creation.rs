@@ -10,7 +10,7 @@ use std::{fs, path::PathBuf};
 use std::process::Command;
 use serde_json::Value;
 
-use crate::commands::server_management::ServerConfig;
+use crate::commands::server_management::{ServerConfig, TunnelConfig};
 use crate::utils::path::{cleanup_empty_parent_dir, cleanup_server_dir, servers_dir};
 
 #[derive(Deserialize, Debug)]
@@ -112,6 +112,10 @@ pub async fn create_server(name: String, version: String, loader: LoaderType, ra
         ram_gb,
         path: server_path.to_string_lossy().to_string(),
         created_at: Utc::now().timestamp(),
+        tunnel: Some(TunnelConfig {
+            enabled: false,
+            provider: "ngrok".into()
+        }),
     };
 
     fs::write(

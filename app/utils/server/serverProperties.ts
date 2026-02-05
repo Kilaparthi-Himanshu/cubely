@@ -3,10 +3,10 @@ import { notifyError } from "../alerts";
 import { invoke } from "@tauri-apps/api/core";
 import { ServerConfig } from "@/app/atoms";
 
-export async function readServerProperties(server: ServerConfig) {
+export async function readServerProperties(serverPath: string) {
     const props = await invoke<ServerProperties>(
             "read_server_properties",
-        { serverPath: server.path }
+        { serverPath }
     ).catch(err => {
         throw err;
     });

@@ -23,7 +23,8 @@ export const notifyError = (message: string) => toast.error(message, {
         border: '1px solid rgb(28, 28, 28)',
         width: '300px',
         textAlign: 'center'
-    }
+    },
+    pauseOnFocusLoss: false
 });
 
 export const notifySuccess = ({ message, onClose, time, hideProgressBar, className }: SuccesPropsType) => toast.success(message, {
@@ -41,5 +42,6 @@ export const notifySuccess = ({ message, onClose, time, hideProgressBar, classNa
         border: '1px solid rgb(28, 28, 28)'
     },
     onClose,
-    className: className
+    className: className,
+    pauseOnFocusLoss: false
 });

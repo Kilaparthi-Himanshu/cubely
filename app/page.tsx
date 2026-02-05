@@ -6,18 +6,24 @@ import { ServerCreateCard } from "./components/ServerManagement/ServerCreateCard
 import ModalRenderer from "./components/ModalRenderer";
 import { useEffect, useMemo, useState } from "react";
 import { ServerCreateModal } from "./components/ServerManagement/ServerCreateModal";
-import { ServerConfig, serversAtom } from "./atoms";
+import { ActiveServer, activeServerAtom, ServerConfig, serversAtom } from "./atoms";
 import { useAtom, useAtomValue } from "jotai";
+import { ActiveServerBanner } from "./components/ServerManagement/ActiveServerBanner";
 
 export default function Home() {
     const [serverCreateModalOpen, setServerCreateModalOpen] = useState(false);
     const [serverVersions, setServerVersions] = useState<string[] | null>(null);
     const [servers, setServers] = useAtom(serversAtom);
+    const [activeServer, setActiveServer] = useAtom(activeServerAtom);
 
-    // const invokeRustCommand = () => {
-    //     invoke('create_server', { name: 'First-Server', version: '1.21.9' })
-    //         .then(result => console.log(result));
-    // }
+    useEffect(() => {
+        async function loadActiveServer() {
+            const active = await invoke<ActiveServer | null>('get_active_server');
+            setActiveServer(active);
+        }
+
+        loadActiveServer();
+    }, []);
 
     useEffect(() => {
         async function getVersions() {
@@ -47,16 +53,21 @@ export default function Home() {
     }, [servers]);
 
     return (
-        <div className="bg-neutral-900 w-full h-full flex p-4 gap-4 flex-wrap app-scroll relative">
-            <ServerCreateCard setIsOpen={setServerCreateModalOpen} />
+        <div className="w-full h-full flex flex-col">
+            <ActiveServerBanner />
 
-            {sortedArrays?.map(server => (
-                <ServerCard server={server} key={server.id} />
-            ))}
+            <div className={`bg-neutral-900 w-full h-full flex p-4 gap-4 flex-wrap app-scroll relative`}>
 
-            <ModalRenderer isOpen={serverCreateModalOpen}> {/* This allows for smoother fade out */}
-                <ServerCreateModal setIsOpen={setServerCreateModalOpen} versions={serverVersions} />
-            </ModalRenderer>
+                <ServerCreateCard setIsOpen={setServerCreateModalOpen} />
+
+                {sortedArrays?.map(server => (
+                    <ServerCard server={server} key={server.id} />
+                ))}
+
+                <ModalRenderer isOpen={serverCreateModalOpen}> {/* This allows for smoother fade out */}
+                    <ServerCreateModal setIsOpen={setServerCreateModalOpen} versions={serverVersions} />
+                </ModalRenderer>
+            </div>
         </div>
     );
 }
