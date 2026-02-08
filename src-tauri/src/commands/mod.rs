@@ -3,3 +3,4 @@ pub mod server_management;
 pub mod system;
 pub mod versions_loaders;
 pub mod misc;
+pub mod java_manager;

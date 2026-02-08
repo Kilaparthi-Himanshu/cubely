@@ -2,6 +2,7 @@ use std::{fs, path::PathBuf, process::Command};
 
 use serde::{Deserialize, Serialize};
 
+use crate::commands::java_manager::{install_java, java_binary, java_installed, require_java};
 use crate::{
     commands::server_creation::LoaderType, state::app_state::AppState, utils::path::servers_dir,
 };
@@ -306,19 +307,68 @@ pub async fn start_server(
         }
     } // <- mutex guard DROPPED here
 
+    // Check and install if required java version is missing
+    let java_version = require_java(&server.version);
+
+    // lock once
+    let java_base = {
+        let guard = state.java_base_dir.lock().unwrap();
+        guard
+            .as_ref()
+            .ok_or("Java base directory not initialized")?
+            .clone()
+    };
+
+    if !java_installed(&java_base, java_version) {
+        install_java(&java_base, java_version).await?;
+    }
+
+    let java = java_binary(&java_base, java_version);
+
+    // println!("Java path: {}", java.display());
+    // println!("Java exists: {}", java.exists());
+    // println!("Server path: {}", server.path);
+    // println!("Server path exists: {}", PathBuf::from(&server.path).exists());
+
+    if !java.exists() {
+        return Err(format!("Java not found at {}", java.display()));
+    }
+
+    if !PathBuf::from(&server.path).exists() {
+        return Err(format!("Server directory not found: {}", server.path));
+    }
+
     // spawn minecraft
-    let mc_child = Command::new("java")
-        .args([
-            format!("-Xmx{}G", server.ram_gb),
-            format!("-Xms{}G", server.ram_gb),
-            "-jar".into(),
-            "server.jar".into(),
-            "nogui".into(),
-        ])
-        .current_dir(&server.path)
-        .stdin(std::process::Stdio::piped())
-        .spawn()
-        .map_err(|e| e.to_string())?;
+    let mc_child: Child = match server.loader {
+        LoaderType::Vanilla | LoaderType::Fabric => {
+            Command::new(java)
+                .args([
+                    format!("-Xmx{}G", server.ram_gb),
+                    format!("-Xms{}G", server.ram_gb),
+                    "-jar".into(),
+                    "server.jar".into(),
+                    "nogui".into(),
+                ])
+                .current_dir(&server.path)
+                .stdin(std::process::Stdio::piped())
+                .spawn()
+                .map_err(|e| e.to_string())?
+        }
+
+        LoaderType::Forge => {
+            Command::new("cmd")
+                .args(["/C",
+                    "run.bat",
+                    &format!("-Xmx{}G", server.ram_gb),
+                    &format!("-Xms{}G", server.ram_gb),
+                    "nogui".into(),
+                ])
+                .current_dir(&server.path)
+                .stdin(std::process::Stdio::piped())
+                .spawn()
+                .map_err(|e| e.to_string())?
+        }
+    };
 
     let mut ngrok_child = None;
     let mut public_url = None;

@@ -55,6 +55,23 @@ pub fn run() {
                 });
             });
 
+            let java_base = app
+                .path()
+                .app_data_dir()
+                .expect("Failed to get app data dir")
+                .join("java");
+
+            {
+                let app_state = app.state::<AppState>();
+
+                let mut slot = app_state
+                    .java_base_dir
+                    .lock()
+                    .unwrap();
+
+                *slot = Some(java_base);
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

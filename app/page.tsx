@@ -9,6 +9,7 @@ import { ServerCreateModal } from "./components/ServerManagement/ServerCreateMod
 import { ActiveServer, activeServerAtom, ServerConfig, serversAtom } from "./atoms";
 import { useAtom, useAtomValue } from "jotai";
 import { ActiveServerBanner } from "./components/ServerManagement/ActiveServerBanner";
+import { LoaderRenderer } from "./components/misc/Loader";
 
 export default function Home() {
     const [serverCreateModalOpen, setServerCreateModalOpen] = useState(false);
@@ -67,6 +68,8 @@ export default function Home() {
                 <ModalRenderer isOpen={serverCreateModalOpen}> {/* This allows for smoother fade out */}
                     <ServerCreateModal setIsOpen={setServerCreateModalOpen} versions={serverVersions} />
                 </ModalRenderer>
+
+                {/* <LoaderRenderer text="Starting Server..." /> */}
             </div>
         </div>
     );
