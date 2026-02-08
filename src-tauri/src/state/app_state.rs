@@ -1,5 +1,5 @@
-use std::sync::{Arc, Mutex};
 use crate::commands::{server_management::ActiveServer, versions_loaders::LoaderSupportCache};
+use std::sync::{Arc, Mutex};
 
 #[derive(Default)]
 pub struct AppState {

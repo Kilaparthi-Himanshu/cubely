@@ -64,10 +64,9 @@ pub async fn get_supported_loaders<'a>(
 }
 
 pub async fn fetch_fabric_versions() -> HashSet<String> {
-    let Ok(resp) = reqwest::get("https://meta.fabricmc.net/v2/versions/game")
-        .await else {
-            return HashSet::new();
-        };
+    let Ok(resp) = reqwest::get("https://meta.fabricmc.net/v2/versions/game").await else {
+        return HashSet::new();
+    };
 
     let Ok(list) = resp.json::<Vec<serde_json::Value>>().await else {
         return HashSet::new();
@@ -79,12 +78,15 @@ pub async fn fetch_fabric_versions() -> HashSet<String> {
 }
 
 pub async fn fetch_forge_versions() -> HashSet<String> {
-    let Ok(resp) = reqwest::get("https://maven.minecraftforge.net/net/minecraftforge/forge/maven-metadata.xml")
-        .await else {
-            return HashSet::new();
-        };
+    let Ok(resp) = reqwest::get(
+        "https://maven.minecraftforge.net/net/minecraftforge/forge/maven-metadata.xml",
+    )
+    .await
+    else {
+        return HashSet::new();
+    };
 
-    let Ok(text) = resp.text().await else { 
+    let Ok(text) = resp.text().await else {
         return HashSet::new();
     };
 
@@ -93,9 +95,7 @@ pub async fn fetch_forge_versions() -> HashSet<String> {
             let line = line.trim();
 
             if line.starts_with("<version>") && line.ends_with("</version>") {
-                let full = line
-                    .replace("<version>", "")
-                    .replace("</version>", "");
+                let full = line.replace("<version>", "").replace("</version>", "");
 
                 let mc_version = full.split('-').next()?;
 
@@ -122,6 +122,6 @@ fn is_supported_forge_mc(version: &str) -> bool {
     match (major, minor) {
         (Some(1), Some(minor)) => minor >= 8, // 1.8+
         (Some(ma), _) if ma > 1 => true, // “Match (Some(ma), _), but only if ma > 1.” future-proof
-        _ => false
+        _ => false,
     }
 }

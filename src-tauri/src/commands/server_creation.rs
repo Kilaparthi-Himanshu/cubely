@@ -2,13 +2,13 @@
 
 use chrono::Utc;
 use reqwest::Client;
-use serde::{Deserialize, Serialize, ser};
-use uuid::Uuid;
+use serde::{ser, Deserialize, Serialize};
+use serde_json::Value;
 use std::f32::consts::E;
 use std::fmt::format;
-use std::{fs, path::PathBuf};
 use std::process::Command;
-use serde_json::Value;
+use std::{fs, path::PathBuf};
+use uuid::Uuid;
 
 use crate::commands::server_management::{ServerConfig, TunnelConfig};
 use crate::utils::path::{cleanup_empty_parent_dir, cleanup_server_dir, servers_dir};
@@ -39,7 +39,7 @@ pub enum LoaderType {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateServerResult {
     pub success: bool,
-    pub path: String
+    pub path: String,
 }
 
 const DEFAULT_SERVER_PROPERTIES: &str = r#"
@@ -59,8 +59,12 @@ server-port=25565
 "#;
 
 #[tauri::command]
-pub async fn create_server(name: String, version: String, loader: LoaderType, ram_gb: u8) -> Result<CreateServerResult, String> {
-
+pub async fn create_server(
+    name: String,
+    version: String,
+    loader: LoaderType,
+    ram_gb: u8,
+) -> Result<CreateServerResult, String> {
     let mut server_path = servers_dir();
     server_path.push(&version);
     server_path.push(&name);
@@ -87,11 +91,16 @@ pub async fn create_server(name: String, version: String, loader: LoaderType, ra
         }
 
         // Write server.properties and eula only after successful install
-        fs::write(server_path.join("server.properties"), DEFAULT_SERVER_PROPERTIES).map_err(|e| e.to_string())?;
+        fs::write(
+            server_path.join("server.properties"),
+            DEFAULT_SERVER_PROPERTIES,
+        )
+        .map_err(|e| e.to_string())?;
         fs::write(server_path.join("eula.txt"), "eula=true\n").map_err(|e| e.to_string())?;
 
         Ok(())
-    }.await;
+    }
+    .await;
 
     // Rollback on failure
     if let Err(err) = result {
@@ -114,22 +123,27 @@ pub async fn create_server(name: String, version: String, loader: LoaderType, ra
         created_at: Utc::now().timestamp(),
         tunnel: Some(TunnelConfig {
             enabled: false,
-            provider: "ngrok".into()
+            provider: "ngrok".into(),
         }),
     };
 
     fs::write(
         server_path.join("cubely.json"),
-        serde_json::to_string_pretty(&config).unwrap()
-    ).map_err(|e| e.to_string())?;
+        serde_json::to_string_pretty(&config).unwrap(),
+    )
+    .map_err(|e| e.to_string())?;
 
-    Ok(CreateServerResult { 
-        success: true, 
-        path: server_path.to_string_lossy().to_string()
+    Ok(CreateServerResult {
+        success: true,
+        path: server_path.to_string_lossy().to_string(),
     })
 }
 
-pub async fn create_vanilla_server(name: &str, version: &str, server_path: &PathBuf) -> Result<(), String> {
+pub async fn create_vanilla_server(
+    name: &str,
+    version: &str,
+    server_path: &PathBuf,
+) -> Result<(), String> {
     // Fetch version manifest
     let client = Client::new();
 
@@ -142,9 +156,7 @@ pub async fn create_vanilla_server(name: &str, version: &str, server_path: &Path
         .await
         .map_err(|e| e.to_string())?;
 
-    let versions = manifest["versions"]
-        .as_array()
-        .ok_or("Invalid Manifest")?;
+    let versions = manifest["versions"].as_array().ok_or("Invalid Manifest")?;
 
     // Find the selected version
     let version_url = versions
@@ -238,9 +250,9 @@ pub async fn create_fabric_server(version: &str, server_path: &PathBuf) -> Resul
         .status()
         .map_err(|e| format!("Failed to run Fabric installer (is Java installed?): {}", e))?;
 
-        // java -jar fabric-installer.jar server \
-        //     -mcversion 1.21.1 \
-        //     -downloadMinecraft
+    // java -jar fabric-installer.jar server \
+    //     -mcversion 1.21.1 \
+    //     -downloadMinecraft
 
     if !status.success() {
         return Err("Fabric installer failed".into());
@@ -259,7 +271,7 @@ pub async fn create_forge_server(version: &str, server_path: &PathBuf) -> Result
 
     // Build Forge installer URL
     let installer_url = format!(
-        "https://maven.minecraftforge.net/net/minecraftforge/forge/{0}/forge-{0}-installer.jar", 
+        "https://maven.minecraftforge.net/net/minecraftforge/forge/{0}/forge-{0}-installer.jar",
         forge_version
     );
 
@@ -286,7 +298,7 @@ pub async fn create_forge_server(version: &str, server_path: &PathBuf) -> Result
     println!("Downloaded forge installer size: {} bytes", bytes.len());
 
     fs::write(&installer_path, bytes)
-        .map_err(|e|  format!("Failed to write Forge installer: {}", e))?;
+        .map_err(|e| format!("Failed to write Forge installer: {}", e))?;
 
     // Run Forge installer
     let status = Command::new("java")
@@ -308,7 +320,7 @@ pub async fn create_forge_server(version: &str, server_path: &PathBuf) -> Result
 
 async fn resolve_latest_forge_build(version: &str) -> Result<String, String> {
     let text = reqwest::get(
-        "https://maven.minecraftforge.net/net/minecraftforge/forge/maven-metadata.xml"
+        "https://maven.minecraftforge.net/net/minecraftforge/forge/maven-metadata.xml",
     )
     .await
     .map_err(|e| e.to_string())?
@@ -320,15 +332,13 @@ async fn resolve_latest_forge_build(version: &str) -> Result<String, String> {
         let line = line.trim();
 
         if line.starts_with("<version>") && line.ends_with("</version>") {
-            let full = line
-                .replace("<version>", "")
-                .replace("</version>", "");
+            let full = line.replace("<version>", "").replace("</version>", "");
 
             let parts: Vec<&str> = full.splitn(2, '-').collect();
             let mc_version = parts[0];
 
             if mc_version == version {
-                return Ok(full)
+                return Ok(full);
             }
         }
     }

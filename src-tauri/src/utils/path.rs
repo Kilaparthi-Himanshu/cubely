@@ -25,7 +25,10 @@ pub fn servers_dir() -> PathBuf {
 pub fn cleanup_server_dir(server_path: &PathBuf) {
     if server_path.exists() {
         if let Err(e) = fs::remove_dir_all(server_path) {
-            eprintln!("Failed to cleanup server directory {:?}: {}", server_path, e);
+            eprintln!(
+                "Failed to cleanup server directory {:?}: {}",
+                server_path, e
+            );
         }
     }
 }
@@ -34,7 +37,7 @@ pub fn cleanup_server_dir(server_path: &PathBuf) {
 ///
 /// This is typically used to clean up a parent directory (such as a Minecraft
 /// version folder) after a server directory has been deleted.
-/// 
+///
 /// If the directory contains any files or subdirectories, it is left untouched.
 /// Errors are intentionally ignored to avoid disrupting the main control flow.
 pub fn cleanup_empty_parent_dir(parent: &PathBuf) {

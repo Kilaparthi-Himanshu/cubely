@@ -4,21 +4,22 @@ pub mod commands;
 pub mod state;
 pub mod utils;
 
-use tauri::Manager;
-use crate::commands::versions_loaders::LoaderSupportCache;
+use crate::commands::server_creation::create_server;
+use crate::commands::server_management::get_active_server;
+use crate::commands::server_management::list_servers;
+use crate::commands::server_management::read_server_config;
+use crate::commands::server_management::read_server_properties;
+use crate::commands::server_management::start_server;
+use crate::commands::server_management::stop_server;
+use crate::commands::server_management::write_server_properties;
 use crate::commands::versions_loaders::fetch_fabric_versions;
 use crate::commands::versions_loaders::fetch_forge_versions;
 use crate::commands::versions_loaders::get_mc_versions;
 use crate::commands::versions_loaders::get_supported_loaders;
-use crate::commands::server_creation::create_server;
-use crate::commands::server_management::list_servers;
-use crate::commands::server_management::read_server_properties;
-use crate::commands::server_management::write_server_properties;
-use crate::commands::server_management::get_active_server;
-use crate::commands::server_management::start_server;
-use crate::commands::server_management::stop_server;
-use crate::commands::server_management::read_server_config;
+use crate::commands::misc::open_folder;
+use crate::commands::versions_loaders::LoaderSupportCache;
 use crate::state::app_state::AppState;
+use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 #[tauri::command] //  to make it invocable from JS
@@ -29,6 +30,7 @@ fn greet(name: &str, email: &str) -> String {
 
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
         .manage(AppState::default())
         .setup(|app| {
@@ -49,7 +51,7 @@ pub fn run() {
                 let mut cache = cache.lock().unwrap();
                 *cache = Some(LoaderSupportCache {
                     fabric_versions,
-                    forge_versions
+                    forge_versions,
                 });
             });
 
@@ -66,7 +68,8 @@ pub fn run() {
             get_active_server,
             start_server,
             stop_server,
-            read_server_config
+            read_server_config,
+            open_folder
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

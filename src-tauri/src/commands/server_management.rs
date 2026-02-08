@@ -2,7 +2,9 @@ use std::{fs, path::PathBuf, process::Command};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{commands::server_creation::LoaderType, state::app_state::AppState, utils::path::servers_dir};
+use crate::{
+    commands::server_creation::LoaderType, state::app_state::AppState, utils::path::servers_dir,
+};
 
 /// READING AND WRITING OF SERVERS
 
@@ -16,7 +18,7 @@ impl Default for TunnelConfig {
     fn default() -> Self {
         Self {
             enabled: false,
-            provider: "ngrok".into()
+            provider: "ngrok".into(),
         }
     }
 }
@@ -32,7 +34,7 @@ pub struct ServerConfig {
     pub created_at: i64,
 
     #[serde(default)]
-    pub tunnel: Option<TunnelConfig>
+    pub tunnel: Option<TunnelConfig>,
 }
 
 #[tauri::command]
@@ -47,17 +49,18 @@ pub fn list_servers() -> Result<Vec<ServerConfig>, String> {
 
     for version_dir in fs::read_dir(base).map_err(|e| e.to_string())? {
         let version_dir = version_dir.map_err(|e| e.to_string())?;
-        if !version_dir.path().is_dir() { continue; } // continue if its not a folder and is a file
+        if !version_dir.path().is_dir() {
+            continue;
+        } // continue if its not a folder and is a file
 
         for server_dir in fs::read_dir(version_dir.path()).map_err(|e| e.to_string())? {
             let server_dir = server_dir.map_err(|e| e.to_string())?;
             let config_path = server_dir.path().join("cubely.json");
 
             if config_path.exists() {
-                let content = fs::read_to_string(config_path)
-                    .map_err(|e| e.to_string())?;
-                let config: ServerConfig = serde_json::from_str(&content)
-                    .map_err(|e| e.to_string())?;
+                let content = fs::read_to_string(config_path).map_err(|e| e.to_string())?;
+                let config: ServerConfig =
+                    serde_json::from_str(&content).map_err(|e| e.to_string())?;
                 servers.push(config);
             }
         }
@@ -66,11 +69,11 @@ pub fn list_servers() -> Result<Vec<ServerConfig>, String> {
     Ok(servers)
 }
 
+use serde_json::Value;
 use std::collections::HashMap;
 use std::process::{Child, Stdio};
-use serde_json::Value;
-use std::time::Duration;
 use std::thread::sleep;
+use std::time::Duration;
 
 #[derive(Serialize, Deserialize)]
 pub struct ServerProperties {
@@ -83,21 +86,20 @@ pub struct ServerProperties {
     pub spawn_protection: u32,
     pub view_distance: u32,
     pub simulation_distance: u32,
-    pub server_port: u16
+    pub server_port: u16,
 }
 
 // Returns the HashMap of all the server propertiy pairs
 pub fn map_server_properties(server_path: &String) -> Result<HashMap<String, String>, String> {
-    let content = fs::read_to_string(
-        PathBuf::from(server_path).join("server.properties")
-    ).map_err(|e| e.to_string())?;
+    let content = fs::read_to_string(PathBuf::from(server_path).join("server.properties"))
+        .map_err(|e| e.to_string())?;
 
     let mut map = std::collections::HashMap::new();
 
     for line in content.lines() {
         let line = line.trim();
-        if line.is_empty() || line.starts_with('#') { 
-            continue; 
+        if line.is_empty() || line.starts_with('#') {
+            continue;
         }
 
         if let Some((k, v)) = line.split_once('=') {
@@ -115,21 +117,36 @@ pub fn read_server_properties(server_path: String) -> Result<ServerProperties, S
     Ok(ServerProperties {
         motd: map.get("motd").cloned().unwrap_or_default(),
         online_mode: map.get("online-mode").map(|v| v == "true").unwrap_or(true),
-        max_players: map.get("max-players").and_then(|v| v.parse().ok()).unwrap_or(20),
+        max_players: map
+            .get("max-players")
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(20),
         difficulty: map.get("difficulty").cloned().unwrap_or("easy".into()),
         gamemode: map.get("gamemode").cloned().unwrap_or("survival".into()),
         pvp: map.get("pvp").map(|v| v == "true").unwrap_or(true),
-        spawn_protection: map.get("spawn-protection").and_then(|v| v.parse().ok()).unwrap_or(16),
-        view_distance: map.get("view-distance").and_then(|v| v.parse().ok()).unwrap_or(10),
-        simulation_distance: map.get("simulation-distance").and_then(|v| v.parse().ok()).unwrap_or(10),
-        server_port: map.get("server-port").and_then(|v| v.parse().ok()).unwrap_or(25565)
+        spawn_protection: map
+            .get("spawn-protection")
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(16),
+        view_distance: map
+            .get("view-distance")
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(10),
+        simulation_distance: map
+            .get("simulation-distance")
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(10),
+        server_port: map
+            .get("server-port")
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(25565),
     })
 }
 
 #[tauri::command]
 pub async fn write_server_properties(
     server_path: String,
-    props: ServerProperties
+    props: ServerProperties,
 ) -> Result<(), String> {
     let mut map = map_server_properties(&server_path)?;
 
@@ -140,9 +157,15 @@ pub async fn write_server_properties(
     map.insert("difficulty".into(), props.difficulty);
     map.insert("gamemode".into(), props.gamemode);
     map.insert("pvp".into(), props.pvp.to_string());
-    map.insert("spawn-protection".into(), props.spawn_protection.to_string());
+    map.insert(
+        "spawn-protection".into(),
+        props.spawn_protection.to_string(),
+    );
     map.insert("view-distance".into(), props.view_distance.to_string());
-    map.insert("simulation-distance".into(), props.simulation_distance.to_string());
+    map.insert(
+        "simulation-distance".into(),
+        props.simulation_distance.to_string(),
+    );
     map.insert("server-port".into(), props.server_port.to_string());
 
     //  Write back EVERYTHING (including unknown keys)
@@ -152,7 +175,11 @@ pub async fn write_server_properties(
         output.push_str(&format!("{k}={v}\n"));
     }
 
-    fs::write(&PathBuf::from(server_path).join("server.properties"), output).map_err(|e| e.to_string())?;
+    fs::write(
+        &PathBuf::from(server_path).join("server.properties"),
+        output,
+    )
+    .map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -188,16 +215,16 @@ pub fn read_server_config(server_path: String) -> Result<EditableServerConfig, S
     Ok(EditableServerConfig {
         name: full.name.clone(),
         ram_gb: full.ram_gb,
-        tunnel: full.tunnel.unwrap_or(TunnelConfig::default())
+        tunnel: full.tunnel.unwrap_or(TunnelConfig::default()),
     })
 }
 
 #[tauri::command]
 pub fn update_server_config(
     server_path: String,
-    update: EditableServerConfig
+    update: EditableServerConfig,
 ) -> Result<(), String> {
-    let path = PathBuf::from(server_path).join("cubely.josn");
+    let path = PathBuf::from(server_path).join("cubely.json");
 
     let raw = fs::read_to_string(&path).map_err(|e| e.to_string())?;
     let mut full: ServerConfig = serde_json::from_str(&raw).map_err(|e| e.to_string())?;
@@ -207,11 +234,7 @@ pub fn update_server_config(
     full.ram_gb = update.ram_gb;
     full.tunnel = Some(update.tunnel);
 
-    fs::write(
-        &path,
-        serde_json::to_string_pretty(&full).unwrap(),
-    )
-    .map_err(|e| e.to_string())?;
+    fs::write(&path, serde_json::to_string_pretty(&full).unwrap()).map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -229,13 +252,11 @@ pub struct ActiveServer {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ActiveServerInfo {
     pub server_id: String,
-    pub public_url: Option<String>
+    pub public_url: Option<String>,
 }
 
 #[tauri::command]
-pub fn get_active_server(
-    state: tauri::State<'_, AppState>,
-) -> Option<ActiveServerInfo> {
+pub fn get_active_server(state: tauri::State<'_, AppState>) -> Option<ActiveServerInfo> {
     let active = state.active_server.lock().unwrap();
 
     active.as_ref().map(|s| ActiveServerInfo {
@@ -277,7 +298,7 @@ pub async fn start_server(
     state: tauri::State<'_, AppState>,
 ) -> Result<(), String> {
     // check state synchronously
-    { 
+    {
         let mut active = state.active_server.lock().unwrap();
 
         if active.is_some() {
@@ -314,20 +335,18 @@ pub async fn start_server(
     }
 
     let mut active = state.active_server.lock().unwrap();
-    *active = Some(ActiveServer { 
-        server_id: server.id.clone(), 
+    *active = Some(ActiveServer {
+        server_id: server.id.clone(),
         mc_child,
         ngrok_child,
-        public_url
+        public_url,
     });
 
     Ok(())
 }
 
 #[tauri::command]
-pub fn stop_server(
-    state: tauri::State<'_, AppState>,
-) -> Result<(), String> {
+pub fn stop_server(state: tauri::State<'_, AppState>) -> Result<(), String> {
     let mut active = state.active_server.lock().unwrap();
 
     if let Some(mut server) = active.take() {

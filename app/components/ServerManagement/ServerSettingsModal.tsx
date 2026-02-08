@@ -139,6 +139,14 @@ export const ServerSettingsModal = ({
     //     console.log(properties);
     // }, [properties]);
 
+    const openServerFolder = async () => {
+        try {
+            await invoke("open_folder", { path: server.path });
+        } catch(err) {
+            console.error(err);
+        }
+    }
+
     if (!properties) return <Loader />
 
     return (
@@ -177,7 +185,14 @@ export const ServerSettingsModal = ({
                     <span className="text-2xl font-semibold">Server Settings</span>
                 </div>
 
-                <div className="border-b border-amber-400 w-full" />
+                <div className="border-t border-amber-400 w-full flex justify-end">
+                    <button 
+                        className={`p-2 text-green-800 font-bold bg-amber-400 text-[10px] cursor-pointer ${isMac ? 'rounded-bl-2xl' : 'corner-b-bevel rounded-bl-[50%]'}`}
+                        onClick={openServerFolder}
+                    >
+                        Open Folder
+                    </button>
+                </div>
 
                 <div className="w-full h-full flex flex-col gap-8 p-4 font-semibold overflow-y-auto overflow-x-hidden app-scroll">
                     <div className="flex flex-col gap-3">
