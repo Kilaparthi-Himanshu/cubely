@@ -6,7 +6,7 @@ import { ServerCreateCard } from "./components/ServerManagement/ServerCreateCard
 import ModalRenderer from "./components/ModalRenderer";
 import { useEffect, useMemo, useState } from "react";
 import { ServerCreateModal } from "./components/ServerManagement/ServerCreateModal";
-import { ActiveServer, activeServerAtom, ServerConfig, serversAtom } from "./atoms";
+import { ActiveServer, activeServerAtom, globalLoaderAtom, ServerConfig, serversAtom } from "./atoms";
 import { useAtom, useAtomValue } from "jotai";
 import { ActiveServerBanner } from "./components/ServerManagement/ActiveServerBanner";
 import { LoaderRenderer } from "./components/misc/Loader";
@@ -16,6 +16,7 @@ export default function Home() {
     const [serverVersions, setServerVersions] = useState<string[] | null>(null);
     const [servers, setServers] = useAtom(serversAtom);
     const [activeServer, setActiveServer] = useAtom(activeServerAtom);
+    const loader = useAtomValue(globalLoaderAtom);
 
     useEffect(() => {
         async function loadActiveServer() {
@@ -69,7 +70,7 @@ export default function Home() {
                     <ServerCreateModal setIsOpen={setServerCreateModalOpen} versions={serverVersions} />
                 </ModalRenderer>
 
-                {/* <LoaderRenderer text="Starting Server..." /> */}
+                {loader.visible && <LoaderRenderer text={loader.message} />}
             </div>
         </div>
     );

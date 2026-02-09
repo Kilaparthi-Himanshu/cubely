@@ -1,8 +1,10 @@
-use std::path::{Path, PathBuf};
+use std::{path::{Path, PathBuf}, process::Command};
 use tauri::{AppHandle, Manager};
 use reqwest::Client;
 use std::{fs, io::Write};
 use zip::ZipArchive;
+
+/// Installing Java
 
 #[derive(Debug, Clone, Copy)]
 pub enum JavaVersion {
@@ -38,10 +40,6 @@ pub fn java_binary(base: &PathBuf, version: JavaVersion) -> PathBuf {
     }
 }
 
-pub fn java_installed(base: &PathBuf, version: JavaVersion) -> bool {
-    java_binary(base, version).exists()
-}
-
 fn java_download_url(version: JavaVersion) -> &'static str {
     match version {
         JavaVersion::Java8 =>
@@ -50,6 +48,14 @@ fn java_download_url(version: JavaVersion) -> &'static str {
             "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jre/hotspot/normal/eclipse",
         JavaVersion::Java21 =>
             "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jre/hotspot/normal/eclipse",
+    }
+}
+
+fn installing_marker(base: &PathBuf, version: JavaVersion) -> PathBuf {
+    match version {
+        JavaVersion::Java8 => base.join("8/.installing"),
+        JavaVersion::Java17 => base.join("17/.installing"),
+        JavaVersion::Java21 => base.join("21/.installing"),
     }
 }
 
@@ -82,6 +88,9 @@ pub async fn install_java(base: &PathBuf, version: JavaVersion) -> Result<(), St
 
     fs::create_dir_all(&version_dir).map_err(|e| e.to_string())?;
 
+    let marker = installing_marker(base, version);
+    fs::write(&marker, b"").ok();
+
     for i in 0..archive.len() {
         let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
         // file.name() gives the relative path inside the ZIP, outpath recreates that structure under version_dir
@@ -111,6 +120,62 @@ pub async fn install_java(base: &PathBuf, version: JavaVersion) -> Result<(), St
         }
     }
 
+    fs::remove_file(&marker).ok();
     fs::remove_file(zip_path).ok();
     Ok(())
+}
+
+/// Java Verification and Cleanup
+
+fn java_structure_ok(java_home: &Path) -> bool {
+    java_home.join("bin").exists()
+        && java_home.join("lib").exists()
+        && java_home.join("release").exists()
+}
+
+fn java_runs(java_bin: &Path) -> bool {
+    Command::new(java_bin)
+        .arg("-version")
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status()
+        .map(|s| s.success())
+        .unwrap_or(false)
+}
+
+fn cleanup_java(base: &PathBuf, version: JavaVersion) {
+    let dir = match version {
+        JavaVersion::Java8 => base.join("8"),
+        JavaVersion::Java17 => base.join("17"),
+        JavaVersion::Java21 => base.join("21"),
+    };
+
+    let zip = base.join("java.zip");
+
+    fs::remove_dir_all(dir).ok();
+    fs::remove_file(zip).ok();
+}
+
+pub fn java_installed(base: &PathBuf, version: JavaVersion) -> bool {
+    let java = java_binary(base, version);
+    let java_home = java.parent().unwrap().parent().unwrap();
+
+    let marker = installing_marker(base, version);
+
+    if marker.exists() {
+        cleanup_java(base, version);
+        return false;
+    }
+
+    if !java_structure_ok(java_home) {
+        cleanup_java(base, version);
+        return false;
+    }
+
+    if !java_runs(&java) {
+        cleanup_java(base, version);
+        return false;
+    }
+
+    true
 }

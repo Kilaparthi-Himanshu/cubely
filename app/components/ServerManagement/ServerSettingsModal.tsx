@@ -8,8 +8,10 @@ import { IoCloseCircle } from "react-icons/io5";
 import { Loader, LoaderRenderer } from "../misc/Loader";
 import { SwitchToggle } from "../misc/Switch";
 import { SelectMenu } from "../misc/SelectMenu";
-import { readServerConfig, readServerProperties, updateServerProperties } from "@/app/utils/server/serverProperties";
+import { readServerConfig, readServerProperties, updateServerConfig, updateServerProperties } from "@/app/utils/server/serverProperties";
 import { refreshServers } from "@/app/utils/server/refreshServers";
+import DiscreteSlider from "../misc/Slider";
+import { ramMarks } from "./ServerCreateModal";
 
 export type ServerProperties = {
     motd: string,
@@ -24,6 +26,15 @@ export type ServerProperties = {
     server_port: number,
 }
 
+type TunnelConfig = {
+    enabled: boolean;
+    provider: "ngrok"
+}
+
+export type EditableServerConfig = Pick<ServerConfig, "name" | "ram_gb"> & {
+    tunnel: TunnelConfig
+}
+
 export const ServerSettingsModal = ({ 
     setIsOpen, 
     server,
@@ -36,6 +47,7 @@ export const ServerSettingsModal = ({
     const isMac = useAtomValue(isMacAtom);
     const [properties, setProperties] = useState<ServerProperties | null>(null);
     const [loading, setLoading] = useState(false);
+    const [config, setConfig] = useState<EditableServerConfig | null>(null);
 
     useEffect(() => {
         async function getServerProperties() {
@@ -57,9 +69,10 @@ export const ServerSettingsModal = ({
         async function getServerConfig() {
             try {
                 const props = await readServerConfig(server.path);
-                // if (props) {
+                if (props) {
+                    setConfig(props);
                     console.log(props);
-                // }
+                }
             } catch(err) {
                 console.error(err);
                 setIsOpen(false);
@@ -69,7 +82,7 @@ export const ServerSettingsModal = ({
         getServerConfig();
     }, [server]);
 
-    const updateField = <K extends keyof ServerProperties>(
+    const updatePropertyField = <K extends keyof ServerProperties>(
         key: K,
         value: ServerProperties[K]
     ) => {
@@ -83,11 +96,43 @@ export const ServerSettingsModal = ({
         });
     }
 
+    const updateConfigField = <K extends keyof EditableServerConfig>(
+        key: K,
+        value: EditableServerConfig[K]
+    ) => {
+        setConfig(prev => {
+            if (!prev) return prev;
+
+            return {
+                ...prev,
+                [key]: value
+            }
+        });
+        console.log(config);
+    }
+
+    const updateTunnelField = <K extends keyof TunnelConfig>(
+        key: K,
+        value: TunnelConfig[K]
+    ) => {
+        setConfig(prev => {
+            if (!prev) return prev;
+
+            return {
+                ...prev,
+                tunnel: {
+                    ...prev.tunnel,
+                    [key]: value
+                }
+            }
+        });
+    }
+
     const handleNumberChange = (
         key: keyof ServerProperties,
         value: string
     ) => {
-        updateField(key, value === "" ? 0 : Number(value));
+        updatePropertyField(key, value === "" ? 0 : Number(value));
     }
 
     const handleNumberBlur =(
@@ -97,7 +142,7 @@ export const ServerSettingsModal = ({
     ) => {
         if (!properties) return;
 
-        updateField(key, clamp(properties[key] as number, min, max));
+        updatePropertyField(key, clamp(properties[key] as number, min, max));
     }
 
     const clamp = (value: number, min: number, max: number) => {
@@ -117,7 +162,14 @@ export const ServerSettingsModal = ({
                 return;
             }
 
+            if (!config) {
+                notifyError("An error has occured!");
+                return;
+            }
+
             await updateServerProperties(server.path, properties);
+
+            await updateServerConfig(server.path, config);
 
             await refreshServers();
 
@@ -148,7 +200,7 @@ export const ServerSettingsModal = ({
         }
     }
 
-    if (!properties) return <Loader />
+    if (!properties || !config) return <Loader />
 
     return (
         <motion.div 
@@ -163,7 +215,7 @@ export const ServerSettingsModal = ({
             // }}
         >
             <motion.div 
-                className={`w-160 h-full bg-gray-800 corner-squircle rounded-[30px] flex flex-col items-center ${isMac && 'rounded-xl'} relative max-h-225 overflow-hidden`}
+                className={`w-210 h-full bg-gray-800 corner-squircle rounded-[30px] flex flex-col items-center ${isMac && 'rounded-xl'} relative max-h-225 overflow-hidden`}
                 onClick={(e) => e.stopPropagation()}
                 initial={{ y: -10 }}
                 animate={{ y: 0 }}
@@ -196,6 +248,41 @@ export const ServerSettingsModal = ({
                 </div>
 
                 <div className="w-full h-full flex flex-col gap-8 p-4 font-semibold overflow-y-auto overflow-x-hidden app-scroll">
+                    <div className="flex flex-col gap-3 w-1/2">
+                        <span>Name Of The Server:</span>
+
+                        <input
+                            className="outline-0 border-2 focus:border-amber-400 transition-[border] corner-squircle rounded-[20px] p-2 min-h-11 h-11 max-h-50 app-scroll" 
+                            value={config.name}
+                            onChange={(e) => {
+                                updateConfigField("name", e.target.value)
+                            }}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-3 w-1/2">
+                        <span>RAM Allocated:</span>
+
+                        <div className="w-full px-1">
+                            <DiscreteSlider 
+                                ariaLabel="Ram Allocation"
+                                value={config.ram_gb}
+                                step={1}
+                                min={1}
+                                max={16}
+                                marks={ramMarks}
+                                unit="GB"
+                                onChange={(value) => updateConfigField("ram_gb", Number(value))}
+                            />
+                        </div>
+
+                        <span className="text-sm text-amber-400">
+                            {config.ram_gb <= 3 && "Good for small vanilla servers"}
+                            {config.ram_gb === 4 && "Recommended for most servers ⭐"}
+                            {config.ram_gb > 4 && "Best for modded servers"}
+                        </span>
+                    </div>
+
                     <div className="flex flex-col gap-3">
                         <span>Message Of The Day:</span>
 
@@ -203,7 +290,7 @@ export const ServerSettingsModal = ({
                             className="outline-0 border-2 focus:border-amber-400 transition-[border] corner-squircle rounded-[20px] p-2 min-h-11 h-11 max-h-50 app-scroll" 
                             value={properties.motd}
                             onChange={(e) => {
-                                updateField("motd", e.target.value)
+                                updatePropertyField("motd", e.target.value)
 
                                 e.target.style.height = "auto";
                                 e.target.style.height = `${e.target.scrollHeight}px`;
@@ -218,7 +305,7 @@ export const ServerSettingsModal = ({
 
                                 <SwitchToggle 
                                     checked={properties.online_mode}
-                                    onChange={(e) => updateField("online_mode", e.target.checked)}
+                                    onChange={(e) => updatePropertyField("online_mode", e.target.checked)}
                                 />
                             </div>
 
@@ -237,7 +324,7 @@ export const ServerSettingsModal = ({
 
                                 <SwitchToggle 
                                     checked={properties.pvp}
-                                    onChange={(e) => updateField("pvp", e.target.checked)}
+                                    onChange={(e) => updatePropertyField("pvp", e.target.checked)}
                                 />
                             </div>
 
@@ -245,6 +332,26 @@ export const ServerSettingsModal = ({
                                 {properties.pvp
                                     ? "Players can damage each other."
                                     : "Player-vs-player combat disabled."}
+                            </span>
+                        </div>
+
+                        <div className="h-full border-l-3 border-amber-400" />
+
+                        <div className="flex flex-col gap-3 h-max">
+                            <div className="flex gap-3 h-max">
+                                <span>Tunnel (Ngrok):</span>
+
+                                <SwitchToggle 
+                                    checked={config.tunnel.enabled}
+                                    onChange={(e) => updateTunnelField("enabled", e.target.checked)}
+                                />
+                            </div>
+
+                            <span className="text-xs text-gray-400">
+                                {config.tunnel.enabled
+                                    ? "Friends can join using a public link."
+                                    : "Share your server using a public link."
+                                }
                             </span>
                         </div>
                     </div>
@@ -255,7 +362,7 @@ export const ServerSettingsModal = ({
                         <input 
                             className="outline-0 border-2 focus:border-amber-400 transition-[border] corner-squircle rounded-[20px] p-2 w-1/2" 
                             value={properties.max_players ?? 20}
-                            onChange={(e) => updateField("max_players", Number(e.target.value))}
+                            onChange={(e) => updatePropertyField("max_players", Number(e.target.value))}
                             type="number"
                             min="1"
                         />
@@ -280,7 +387,7 @@ export const ServerSettingsModal = ({
                             <SelectMenu
                                 items={DIFFICULTIES}
                                 value={properties.difficulty}
-                                onChange={(value) => updateField("difficulty", value)}
+                                onChange={(value) => updatePropertyField("difficulty", value)}
                                 placeholder="Select difficulty"
                             />
                         </div>
@@ -390,7 +497,7 @@ export const ServerSettingsModal = ({
                         </span>
                     </div>
 
-                    <div className="w-full flex justify-end">
+                    <div className="w-full flex justify-end absolute bottom-4 right-4">
                         <button 
                             className="bg-amber-400 px-4 py-2 text-stone-800 corner-squircle rounded-2xl cursor-pointer shadow-xl active:scale-97 active:bg-[#bb8e1e] transition-[scale,background]"
                             onClick={handleEditServerProperties}

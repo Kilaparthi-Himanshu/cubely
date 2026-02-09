@@ -22,6 +22,15 @@ export type SupportedLoadersType = {
 
 const INSTANCE_NAME_REGEX = /^[a-zA-Z0-9_-]+$/;
 
+export const ramMarks = [
+    { value: 1, label: '1' },
+    { value: 2, label: '2' },
+    { value: 4, label: '4' },
+    { value: 8, label: '8' },
+    { value: 12, label: '12' },
+    { value: 16, label: '16' },
+];
+
 export const ServerCreateModal = ({ 
     setIsOpen, 
     versions,
@@ -29,15 +38,6 @@ export const ServerCreateModal = ({
     setIsOpen: React.Dispatch<React.SetStateAction<boolean>>, 
     versions?: string[] | null
 }) => {
-    const ramMarks = [
-        { value: 1, label: '1' },
-        { value: 2, label: '2' },
-        { value: 4, label: '4' },
-        { value: 8, label: '8' },
-        { value: 12, label: '12' },
-        { value: 16, label: '16' },
-    ];
-
     const isMac = useAtomValue(isMacAtom);
     const [mappedVersions, setMappedVersions] = useState<{ key: string, label: string }[]>();
     const [instanceName, setInstanceName] = useState<string | null>(null);

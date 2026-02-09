@@ -15,12 +15,12 @@ export const Loader = ({
                 <div className="w-4 h-4 rounded-full bg-white animate-bounce [animation-delay:-.5s]"></div>
             </div>
 
-            <div className='font-bold'>{text}</div>
+            <div className='font-bold'>{text ?? "Loading..."}</div>
         </motion.div>
     );
 }
 
-export const LoaderRenderer = ({ text }: { text: string }) => {
+export const LoaderRenderer = ({ text }: { text?: string }) => {
 
     return (
         <AnimatePresence>

@@ -145,7 +145,7 @@ pub fn read_server_properties(server_path: String) -> Result<ServerProperties, S
 }
 
 #[tauri::command]
-pub async fn write_server_properties(
+pub async fn update_server_properties(
     server_path: String,
     props: ServerProperties,
 ) -> Result<(), String> {
@@ -223,7 +223,7 @@ pub fn read_server_config(server_path: String) -> Result<EditableServerConfig, S
 #[tauri::command]
 pub fn update_server_config(
     server_path: String,
-    update: EditableServerConfig,
+    props: EditableServerConfig,
 ) -> Result<(), String> {
     let path = PathBuf::from(server_path).join("cubely.json");
 
@@ -231,9 +231,9 @@ pub fn update_server_config(
     let mut full: ServerConfig = serde_json::from_str(&raw).map_err(|e| e.to_string())?;
 
     // Only allow safe fields
-    full.name = update.name;
-    full.ram_gb = update.ram_gb;
-    full.tunnel = Some(update.tunnel);
+    full.name = props.name;
+    full.ram_gb = props.ram_gb;
+    full.tunnel = Some(props.tunnel);
 
     fs::write(&path, serde_json::to_string_pretty(&full).unwrap()).map_err(|e| e.to_string())?;
 

@@ -1,11 +1,14 @@
-import { activeServerAtom } from "@/app/atoms";
+import { activeServerAtom, showGlobalLoaderAtom, hideGlobalLoaderAtom } from "@/app/atoms";
 import { notifyError } from "@/app/utils/alerts";
 import { invoke } from "@tauri-apps/api/core";
 import { acceleratedValues } from "framer-motion";
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 
 export const ActiveServerBanner = () => {
     const [activeServer, setActiveServer] = useAtom(activeServerAtom);
+    
+    const setGlobalShowLoader = useSetAtom(showGlobalLoaderAtom);
+    const setHideGlobalLoader = useSetAtom(hideGlobalLoaderAtom);
 
     if (!activeServer) return;
 
@@ -20,11 +23,14 @@ export const ActiveServerBanner = () => {
                         active:scale-95 transition cursor-pointer"
                 onClick={async () => {
                     try {
+                        setGlobalShowLoader("Stopping server...");
                         await invoke("stop_server");
                         setActiveServer(null);
                     } catch (err) {
                         notifyError(err?.toString() ?? "Failed to start server");
                         console.error(err);
+                    } finally {
+                        setHideGlobalLoader();
                     }
                 }}
             >

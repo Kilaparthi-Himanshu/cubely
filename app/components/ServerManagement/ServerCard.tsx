@@ -1,8 +1,8 @@
 'use client';
 
-import { activeServerAtom, isMacAtom, ServerConfig } from "@/app/atoms"
+import { activeServerAtom, hideGlobalLoaderAtom, isMacAtom, ServerConfig, showGlobalLoaderAtom } from "@/app/atoms"
 import { invoke } from "@tauri-apps/api/core";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { FaCirclePlay } from "react-icons/fa6";
 import { FaStopCircle } from "react-icons/fa";
 import { IoSettingsSharp } from "react-icons/io5";
@@ -33,14 +33,19 @@ export const ServerCard = ({
     const isActive = activeServer?.server_id === server.id;
     const isAnotherRunning = activeServer !== null && activeServer.server_id !== server.id;
 
+    const setGlobalShowLoader = useSetAtom(showGlobalLoaderAtom);
+    const setHideGlobalLoader = useSetAtom(hideGlobalLoaderAtom);
+
     const handlePlayStop = async () => {
         try {
             if (isActive) {
+                setGlobalShowLoader("Stopping server...");
                 await invoke("stop_server");
                 setActiveServer(null);
             } else if (isAnotherRunning) {
                 notifyError("Another server is already running.");
             } else {
+                setGlobalShowLoader("Starting server...");
                 await invoke("start_server", { server });
                 setActiveServer({
                     server_id: server.id,
@@ -50,6 +55,8 @@ export const ServerCard = ({
         } catch (err) {
             notifyError(err?.toString() ?? "Failed to start server");
             console.error(err);
+        } finally {
+            setHideGlobalLoader();
         }
     }
 
