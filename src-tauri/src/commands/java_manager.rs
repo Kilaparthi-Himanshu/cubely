@@ -31,6 +31,9 @@ pub fn java_binary(base: &PathBuf, version: JavaVersion) -> PathBuf {
     let bin = "bin/java.exe";
 
     #[cfg(not(target_os = "windows"))]
+    let bin = "Contents/Home/bin/java";
+
+    #[cfg(all(unix, not(target_os = "macos")))]
     let bin = "bin/java";
 
     match version {
@@ -42,12 +45,47 @@ pub fn java_binary(base: &PathBuf, version: JavaVersion) -> PathBuf {
 
 fn java_download_url(version: JavaVersion) -> &'static str {
     match version {
-        JavaVersion::Java8 =>
-            "https://api.adoptium.net/v3/binary/latest/8/ga/windows/x64/jre/hotspot/normal/eclipse",
-        JavaVersion::Java17 =>
-            "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jre/hotspot/normal/eclipse",
-        JavaVersion::Java21 =>
-            "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jre/hotspot/normal/eclipse",
+        JavaVersion::Java8 => {
+            #[cfg(target_os = "windows")]
+            { "https://api.adoptium.net/v3/binary/latest/8/ga/windows/x64/jre/hotspot/normal/eclipse" }
+
+            #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+            { "https://api.adoptium.net/v3/binary/latest/8/ga/mac/x64/jre/hotspot/normal/eclipse" }
+
+            #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+            { "https://api.adoptium.net/v3/binary/latest/8/ga/mac/aarch64/jre/hotspot/normal/eclipse" }
+
+            #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+            { "https://api.adoptium.net/v3/binary/latest/8/ga/linux/x64/jre/hotspot/normal/eclipse" }
+        }
+
+        JavaVersion::Java17 => {
+            #[cfg(target_os = "windows")]
+            { "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jre/hotspot/normal/eclipse" }
+
+            #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+            { "https://api.adoptium.net/v3/binary/latest/17/ga/mac/x64/jre/hotspot/normal/eclipse" }
+
+            #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+            { "https://api.adoptium.net/v3/binary/latest/17/ga/mac/aarch64/jre/hotspot/normal/eclipse" }
+
+            #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+            { "https://api.adoptium.net/v3/binary/latest/17/ga/linux/x64/jre/hotspot/normal/eclipse" }
+        }
+
+        JavaVersion::Java21 => {
+            #[cfg(target_os = "windows")]
+            { "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jre/hotspot/normal/eclipse" }
+
+            #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+            { "https://api.adoptium.net/v3/binary/latest/21/ga/mac/x64/jre/hotspot/normal/eclipse" }
+
+            #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+            { "https://api.adoptium.net/v3/binary/latest/21/ga/mac/aarch64/jre/hotspot/normal/eclipse" }
+
+            #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+            { "https://api.adoptium.net/v3/binary/latest/21/ga/linux/x64/jre/hotspot/normal/eclipse" }
+        }
     }
 }
 
@@ -59,11 +97,25 @@ fn installing_marker(base: &PathBuf, version: JavaVersion) -> PathBuf {
     }
 }
 
+fn java_archive_path(base: &PathBuf) -> PathBuf {
+    #[cfg(target_os = "windows")]
+    { base.join("java.zip") }
+
+    #[cfg(not(target_os = "windows"))]
+    { base.join("java.tar.gz") }
+}
+
 pub async fn install_java(base: &PathBuf, version: JavaVersion) -> Result<(), String> {
+    #[cfg(all(target_os = "linux", not(target_arch = "x86_64")))]
+    compile_error!("Unsupported Linux architecture for Java installer");
+
     let url = java_download_url(version);
     let target_dir = base; // C:\Users\<YOUR_USERNAME>\AppData\Roaming\com.tauri.dev\java
 
     fs::create_dir_all(&target_dir).map_err(|e| e.to_string())?;
+
+    let marker = installing_marker(base, version);
+    fs::write(&marker, b"").ok();
 
     let bytes = Client::new()
         .get(url)
@@ -74,11 +126,8 @@ pub async fn install_java(base: &PathBuf, version: JavaVersion) -> Result<(), St
         .await
         .map_err(|e| e.to_string())?;
 
-    let zip_path = target_dir.join("java.zip");
-    fs::write(&zip_path, &bytes).map_err(|e| e.to_string())?;
-
-    let file = fs::File::open(&zip_path).map_err(|e| e.to_string())?;
-    let mut archive = ZipArchive::new(file).map_err(|e| e.to_string())?;
+    let archive_path = java_archive_path(target_dir);
+    fs::write(&archive_path, &bytes).map_err(|e| e.to_string())?;
 
     let version_dir = match version {
         JavaVersion::Java8 => target_dir.join("8"),
@@ -88,49 +137,104 @@ pub async fn install_java(base: &PathBuf, version: JavaVersion) -> Result<(), St
 
     fs::create_dir_all(&version_dir).map_err(|e| e.to_string())?;
 
-    let marker = installing_marker(base, version);
-    fs::write(&marker, b"").ok();
+    #[cfg(target_os = "windows")]
+    {
+        let file = fs::File::open(&archive_path).map_err(|e| e.to_string())?;
+        let mut archive = ZipArchive::new(file).map_err(|e| e.to_string())?;
 
-    for i in 0..archive.len() {
-        let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
-        // file.name() gives the relative path inside the ZIP, outpath recreates that structure under version_dir
-        let rel = Path::new(file.name());
+        for i in 0..archive.len() {
+            let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
+            // file.name() gives the relative path inside the ZIP, outpath recreates that structure under version_dir
+            let rel = Path::new(file.name());
 
-        // Strip the ZIP's top-level folder (e.g. jdk-17.x.x-jre/)
-        let rel = rel
-            .components()
-            .skip(1)
-            .collect::<PathBuf>();
+            // Strip the ZIP's top-level folder (e.g. jdk-17.x.x-jre/)
+            let rel = rel
+                .components()
+                .skip(1)
+                .collect::<PathBuf>();
 
-        // Skip the root folder entry itself
-        if rel.as_os_str().is_empty() {
-            continue;
+            // Skip the root folder entry itself
+            if rel.as_os_str().is_empty() {
+                continue;
+            }
+
+            let outpath = version_dir.join(rel);
+
+            if file.is_dir() {
+                fs::create_dir_all(&outpath).ok();
+            } else {
+                if let Some(p) = outpath.parent() {
+                    fs::create_dir_all(p).ok();
+                }
+                let mut outfile = fs::File::create(&outpath).map_err(|e| e.to_string())?;
+                std::io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
+            }
         }
+    }
 
-        let outpath = version_dir.join(rel);
+    #[cfg(not(target_os = "windows"))]
+    {
+        use flate2::read::GzDecoder;
+        use tar::Archive;
 
-        if file.is_dir() {
-            fs::create_dir_all(&outpath).ok();
-        } else {
+        let file = fs::File::open(&archive_path).map_err(|e| e.to_string())?;
+        let decompressor = GzDecoder::new(file);
+        let mut archive = Archive::new(decompressor);
+
+        for entry in archive.entries().map_err(|e| e.to_string())? {
+            let mut entry = entry.map_err(|e| e.to_string())?;
+
+            let rel = entry
+                .path()
+                .map_err(|e| e.to_string())?
+                .components()
+                .skip(1)
+                .collect::<PathBuf>();
+
+            if rel.as_os_str().is_empty() {
+                continue;
+            }
+
+            let outpath = version_dir.join(rel);
             if let Some(p) = outpath.parent() {
                 fs::create_dir_all(p).ok();
             }
-            let mut outfile = fs::File::create(&outpath).map_err(|e| e.to_string())?;
-            std::io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
+
+            entry.unpack(outpath).map_err(|e| e.to_string())?;
+        }
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        use std::os::unix::fs::PermissionsExt;
+
+        let java_bin = java_binary(base, version);
+        if java_bin.exists() {
+            fs::set_permissions(&java_bin, fs::Permissions::from_mode(0o755)).ok();
         }
     }
 
     fs::remove_file(&marker).ok();
-    fs::remove_file(zip_path).ok();
+    fs::remove_file(archive_path).ok();
     Ok(())
 }
 
 /// Java Verification and Cleanup
 
 fn java_structure_ok(java_home: &Path) -> bool {
-    java_home.join("bin").exists()
-        && java_home.join("lib").exists()
-        && java_home.join("release").exists()
+    #[cfg(target_os = "windows")]
+    {
+        java_home.join("bin").exists()
+            && java_home.join("lib").exists()
+            && java_home.join("release").exists()
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        java_home.join("Contents/Home/bin").exists()
+            && java_home.join("Contents/Home/lib").exists()
+            && java_home.join("Contents/Home/release").exists()
+    }
 }
 
 fn java_runs(java_bin: &Path) -> bool {
@@ -150,15 +254,25 @@ fn cleanup_java(base: &PathBuf, version: JavaVersion) {
         JavaVersion::Java21 => base.join("21"),
     };
 
-    let zip = base.join("java.zip");
+    let archive = java_archive_path(base);
 
     fs::remove_dir_all(dir).ok();
-    fs::remove_file(zip).ok();
+    fs::remove_file(archive).ok();
 }
 
 pub fn java_installed(base: &PathBuf, version: JavaVersion) -> bool {
     let java = java_binary(base, version);
-    let java_home = java.parent().unwrap().parent().unwrap();
+    let java_home = {
+        #[cfg(target_os = "macos")]
+        {
+            java.parent().unwrap().parent().unwrap().parent().unwrap()
+        }
+
+        #[cfg(not(target_os = "macos"))]
+        {
+            java.parent().unwrap().parent().unwrap()
+        }
+    };
 
     let marker = installing_marker(base, version);
 

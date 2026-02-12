@@ -339,7 +339,7 @@ export const ServerSettingsModal = ({
 
                         <div className="flex flex-col gap-3 h-max">
                             <div className="flex gap-3 h-max">
-                                <span>Tunnel (Ngrok):</span>
+                                <span>Tunnel (Playit.gg):</span>
 
                                 <SwitchToggle 
                                     checked={config.tunnel.enabled}

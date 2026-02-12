@@ -30,22 +30,30 @@ fn zip_path(base: &PathBuf) -> PathBuf {
     base.join("playit.zip")
 }
 
-/// Download URLs (official)
+/// Download URLs (official + existing)
+#[cfg(windows)]
 fn playit_download_url() -> &'static str {
-    #[cfg(target_os = "windows")]
-    { "https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-windows-x86_64.exe" }
+    "https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-windows-x86_64.exe"
+}
 
-    #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
-    { "https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-macos-x86_64" }
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+fn playit_download_url() -> &'static str {
+    "https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-linux-amd64"
+}
 
-    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-    { "https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-macos-aarch64" }
+#[cfg(all(target_os = "linux", target_arch = "aarch64"))]
+fn playit_download_url() -> &'static str {
+    "https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-linux-aarch64"
+}
 
-    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
-    { "https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-linux-x86_64" }
-} 
 
 /// Install Playit (transactional)
+#[cfg(target_os = "macos")]
+pub async fn install_playit(_: &PathBuf) -> Result<(), String> {
+    Err("Playit tunnel is not supported on macOS. Consider changing the provider or turn off Tunnel option and try again.".into())
+}
+
+#[cfg(not(target_os = "macos"))]
 pub async fn install_playit(base: &PathBuf) -> Result<(), String> {
     fs::create_dir_all(base).map_err(|e| e.to_string())?;
 
@@ -82,7 +90,6 @@ pub async fn install_playit(base: &PathBuf) -> Result<(), String> {
 }
 
 /// Verification
-
 fn playit_runs(bin: &Path) -> bool {
     Command::new(bin)
         .arg("--version")
@@ -99,6 +106,12 @@ fn cleanup_playit(base: &PathBuf) {
 }
 
 /// Installed Check
+#[cfg(target_os = "macos")]
+pub fn playit_installed(_: &PathBuf) -> bool {
+    false
+}
+
+#[cfg(not(target_os = "macos"))]
 pub fn playit_installed(base: &PathBuf) -> bool {
     let bin = playit_binary(base);
 
@@ -119,11 +132,13 @@ pub fn playit_installed(base: &PathBuf) -> bool {
 
     true
 }
-
+#[cfg(windows)]
 use std::os::windows::process::CommandExt;
 
+#[cfg(windows)]
 const CREATE_NEW_CONSOLE: u32 = 0x00000010;
 
+#[cfg(windows)]
 pub fn start_playit(base: &PathBuf) -> Result<Child, String> {
     let bin = playit_binary(base);
 
@@ -151,4 +166,20 @@ pub fn start_playit(base: &PathBuf) -> Result<Child, String> {
     //     .map_err(|e| e.to_string())?;
 
     Ok(child)
+}
+
+#[cfg(target_os = "macos")]
+pub fn start_playit(_: &PathBuf) -> Result<Child, String> {
+    Err("Playit tunnel is not supported on macOS. Consider changing the provider or turn off Tunnel option and try again.".into())
+}
+
+#[cfg(target_os = "linux")]
+pub fn start_playit(base: &PathBuf) -> Result<Child, String> {
+    let bin = playit_binary(base);
+
+    // x-terminal-emulator is standard on Debian/Ubuntu
+    Command::new("x-terminal-emulator")
+        .args(["-e", bin.to_str().ok_or("Invalid playit path")?])
+        .spawn()
+        .map_err(|e| e.to_string())
 }

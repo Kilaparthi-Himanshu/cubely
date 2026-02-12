@@ -15,7 +15,7 @@ export const Loader = ({
                 <div className="w-4 h-4 rounded-full bg-white animate-bounce [animation-delay:-.5s]"></div>
             </div>
 
-            <div className='font-bold'>{text ?? "Loading..."}</div>
+            <div className='font-bold text-white'>{text ?? "Loading..."}</div>
         </motion.div>
     );
 }
