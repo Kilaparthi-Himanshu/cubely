@@ -58,6 +58,13 @@ pub fn run() {
                 });
             });
 
+            // Store app handle
+            {
+                let state = app.state::<AppState>();
+                let mut slot = state.app_handle.lock().unwrap();
+                *slot = Some(app.handle().clone());
+            }
+
             // Java base dir
             let java_base = app
                 .path()

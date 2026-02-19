@@ -1,6 +1,8 @@
+use std::io::BufRead;
 use std::{fs, path::PathBuf, process::Command};
 
 use serde::{Deserialize, Serialize};
+use tauri::Emitter;
 
 use crate::commands::java_manager::{install_java, java_binary, java_installed, require_java};
 use crate::commands::ngrok_manager::{install_ngrok, ngrok_binary, ngrok_installed, start_ngrok};
@@ -297,9 +299,8 @@ pub async fn start_server(
     let java_base = {
         let guard = state.java_base_dir.lock().unwrap();
         guard
-            .as_ref()
-            .ok_or("Java base directory not initialized")?
             .clone()
+            .ok_or("Java base directory not initialized")?
     };
 
     if !java_installed(&java_base, java_version) {
@@ -336,7 +337,7 @@ pub async fn start_server(
     }
 
     // spawn minecraft
-    let mc_child: Child = match server.loader {
+    let mut mc_child: Child = match server.loader {
         LoaderType::Vanilla | LoaderType::Fabric => {
             Command::new(java)
                 .args([
@@ -347,7 +348,9 @@ pub async fn start_server(
                     "nogui".into(),
                 ])
                 .current_dir(&server.path)
-                .stdin(std::process::Stdio::piped())
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
                 .spawn()
                 .map_err(|e| e.to_string())?
         }
@@ -364,7 +367,8 @@ pub async fn start_server(
                     "nogui".into(),
                 ])
                 .current_dir(&server.path)
-                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
                 .spawn()
                 .map_err(|e| e.to_string())?
         }
@@ -400,6 +404,24 @@ pub async fn start_server(
                 }
             }
         }
+    }
+
+    // Logging to frontend
+    let app = {
+        let guard = state.app_handle.lock().unwrap();
+        guard
+            .clone()
+            .ok_or("App handle not initialized")?
+    };
+
+    if let Some(stdout) = mc_child.stdout.take() {
+        let reader = std::io::BufReader::new(stdout);
+
+        std::thread::spawn(move || {
+            for line in reader.lines().flatten() {
+                let _ = app.emit("mc-log", line);
+            }
+        });
     }
 
     let mut active = state.active_server.lock().unwrap();
