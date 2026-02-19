@@ -13,6 +13,7 @@ use crate::commands::server_management::read_server_properties;
 use crate::commands::server_management::start_server;
 use crate::commands::server_management::stop_server;
 use crate::commands::server_management::update_server_properties;
+use crate::commands::server_management::delete_server;
 use crate::commands::versions_loaders::fetch_fabric_versions;
 use crate::commands::versions_loaders::fetch_forge_versions;
 use crate::commands::versions_loaders::get_mc_versions;
@@ -43,6 +44,7 @@ pub fn run() {
                 )?;
             }
 
+            // Versions cache
             let cache = app.state::<AppState>().loader_cache.clone();
 
             tauri::async_runtime::spawn(async move {
@@ -56,6 +58,7 @@ pub fn run() {
                 });
             });
 
+            // Java base dir
             let java_base = app
                 .path()
                 .app_data_dir()
@@ -73,6 +76,7 @@ pub fn run() {
                 *slot = Some(java_base);
             }
 
+            // Ngrok base dir
             let ngrok_base = app
                 .path()
                 .app_data_dir()
@@ -90,6 +94,7 @@ pub fn run() {
                 *slot = Some(ngrok_base);
             }
 
+            // Playit base dir
             let playit_base = app
                 .path()
                 .app_data_dir()
@@ -122,7 +127,8 @@ pub fn run() {
             stop_server,
             read_server_config,
             update_server_config,
-            open_folder
+            open_folder,
+            delete_server
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

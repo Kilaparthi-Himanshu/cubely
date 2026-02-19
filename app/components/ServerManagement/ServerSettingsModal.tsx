@@ -12,6 +12,8 @@ import { readServerConfig, readServerProperties, updateServerConfig, updateServe
 import { refreshServers } from "@/app/utils/server/refreshServers";
 import DiscreteSlider from "../misc/Slider";
 import { ramMarks } from "./ServerCreateModal";
+import { deleteServer } from "@/app/utils/server/deleteServer";
+import { DeleteSessionModalRenderer } from "../misc/DeleteConfirmModal";
 
 export type ServerProperties = {
     motd: string,
@@ -48,6 +50,7 @@ export const ServerSettingsModal = ({
     const [properties, setProperties] = useState<ServerProperties | null>(null);
     const [loading, setLoading] = useState(false);
     const [config, setConfig] = useState<EditableServerConfig | null>(null);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
     useEffect(() => {
         async function getServerProperties() {
@@ -108,7 +111,6 @@ export const ServerSettingsModal = ({
                 [key]: value
             }
         });
-        console.log(config);
     }
 
     const updateTunnelField = <K extends keyof TunnelConfig>(
@@ -167,6 +169,11 @@ export const ServerSettingsModal = ({
                 return;
             }
 
+            if (properties.simulation_distance > properties.view_distance) {
+                notifyError("Simulation distance cannot exceed view distance.");
+                return;
+            }
+
             await updateServerProperties(server.path, properties);
 
             await updateServerConfig(server.path, config);
@@ -197,6 +204,24 @@ export const ServerSettingsModal = ({
             console.log("GG");
         } catch(err) {
             console.error(err);
+        }
+    }
+
+    const handleDeleteServer = async() => {
+        try {
+            await deleteServer(server.id);
+
+            await refreshServers();
+
+            notifySuccess({
+                message: "Server deleted successfully!",
+                hideProgressBar: false
+            });
+        } catch (err) {
+            notifyError("An error occured while deleting the server. Please try again!");
+            console.error("Create server failed:", err);
+        } finally {
+            setIsOpen(false);
         }
     }
 
@@ -240,7 +265,7 @@ export const ServerSettingsModal = ({
 
                 <div className="border-t border-amber-400 w-full flex justify-end">
                     <button 
-                        className={`z-999 absolute right-4 p-2 text-green-800 font-bold bg-amber-400 active:bg-amber-500 transition-colors text-[10px] cursor-pointer ${isMac ? 'rounded-b-2xl' : 'corner-b-bevel rounded-b-[10px]'}`}
+                        className={`z-300 absolute right-4 p-2 text-green-800 font-bold bg-amber-400 active:bg-amber-500 transition-colors text-[10px] cursor-pointer ${isMac ? 'rounded-b-2xl' : 'corner-b-bevel rounded-b-[10px]'}`}
                         onClick={openServerFolder}
                     >
                         Open Folder
@@ -507,7 +532,7 @@ export const ServerSettingsModal = ({
 
                         <button 
                             className="bg-red-400 px-4 py-2 text-red-900 corner-squircle rounded-2xl cursor-pointer shadow-xl active:scale-97 active:bg-red-600 transition-[scale,background] size-max"
-                            onClick={() => console.log("FF")}
+                            onClick={() => setDeleteModalOpen(true)}
                         >
                             Delete
                         </button>
@@ -526,6 +551,8 @@ export const ServerSettingsModal = ({
                         </button>
                     </div>
                 </div>
+
+                <DeleteSessionModalRenderer isOpen={deleteModalOpen} setIsOpen={setDeleteModalOpen} onConfirm={handleDeleteServer} />
             </motion.div>
         </motion.div>
     );

@@ -353,15 +353,18 @@ pub async fn start_server(
         }
 
         LoaderType::Forge => {
-            Command::new("cmd")
-                .args(["/C",
-                    "run.bat",
-                    &format!("-Xmx{}G", server.ram_gb),
-                    &format!("-Xms{}G", server.ram_gb),
+            let jar_name = find_forge_entry(&server.path)?;
+
+            Command::new(java)
+                .args([
+                    format!("-Xmx{}G", server.ram_gb),
+                    format!("-Xms{}G", server.ram_gb),
+                    "-jar".into(),
+                    jar_name,
                     "nogui".into(),
                 ])
                 .current_dir(&server.path)
-                .stdin(std::process::Stdio::piped())
+                .stdin(Stdio::piped())
                 .spawn()
                 .map_err(|e| e.to_string())?
         }
@@ -436,4 +439,63 @@ pub fn stop_server(state: tauri::State<'_, AppState>) -> Result<(), String> {
     } else {
         Err("No active server".into())
     }
+}
+
+#[tauri::command]
+pub fn delete_server(
+    server_id: String,
+    state: tauri::State<'_, AppState>
+) -> Result<(), String> {
+    // Block deleting active server
+    {
+        let active = state.active_server.lock().unwrap();
+        if let Some(active) = active.as_ref() {
+            if active.server_id == server_id {
+                return Err("Cannot delete a running server".into());
+            }
+        }
+    }
+
+    // Find server config
+    let servers = list_servers()?;
+    let server = servers
+        .into_iter()
+        .find(|s| s.id == server_id)
+        .ok_or("Server not found")?;
+
+    let server_path = PathBuf::from(&server.path);
+
+    // Safety check: must live under servers_dir
+    let base = servers_dir();
+    if !server_path.starts_with(&base) {
+        return Err("Invalid server path".into());
+    }
+
+    // Delete
+    fs::remove_dir_all(&server_path).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+fn find_forge_entry(server_path: &str) -> Result<String, String> {
+    let dir = PathBuf::from(server_path);
+
+    for entry in fs::read_dir(&dir).map_err(|e| e.to_string())? {
+        let entry = entry.map_err(|e| e.to_string())?;
+        let path = entry.path();
+
+        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+            // New Forge versions with shim
+            if name.contains("shim.jar") {
+                return Ok(name.to_string());
+            }
+
+            // Old Forge versions with universal jar
+            if name.contains("forge-") && name.contains("universal.jar") {
+                return Ok(name.to_string());
+            }
+        }
+    }
+
+    Err("Could not find Forge launch jar".into())
 }

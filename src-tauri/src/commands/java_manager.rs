@@ -14,15 +14,23 @@ pub enum JavaVersion {
 }
 
 pub fn require_java(mc_version: &str) -> JavaVersion {
-    // String comparison works for MC versions reliably here
-    if mc_version < "1.13" {
-        JavaVersion::Java8
-    } else if mc_version < "1.18" {
-        JavaVersion::Java8
-    } else if mc_version < "1.20.5" {
-        JavaVersion::Java17
-    } else {
-        JavaVersion::Java21
+    let parts: Vec<u32> = mc_version
+        .split('.')
+        .filter_map(|p| p.parse().ok())
+        .collect();
+
+    if parts.len() < 2 {
+        return JavaVersion::Java17
+    }
+
+    let major = parts[0];
+    let minor = parts[1];
+
+    match (major, minor) {
+        (1, 0..=16) => JavaVersion::Java8, // 1.0 - 1.16.x
+        (1, 17..=20) => JavaVersion::Java17, // 1.17 - 1.20.x
+        (1, 21..) => JavaVersion::Java21, // 1.21+
+        _ => JavaVersion::Java17, // Fallback
     }
 }
 

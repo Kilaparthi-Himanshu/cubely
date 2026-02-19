@@ -6,7 +6,7 @@ import { useAtom, useSetAtom } from "jotai";
 
 export const ActiveServerBanner = () => {
     const [activeServer, setActiveServer] = useAtom(activeServerAtom);
-    
+
     const setGlobalShowLoader = useSetAtom(showGlobalLoaderAtom);
     const setHideGlobalLoader = useSetAtom(hideGlobalLoaderAtom);
 

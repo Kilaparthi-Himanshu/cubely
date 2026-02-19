@@ -36,6 +36,4 @@ export async function createServer({
         loader,
         ramGb
     });
-
-    console.log(res);
 }
