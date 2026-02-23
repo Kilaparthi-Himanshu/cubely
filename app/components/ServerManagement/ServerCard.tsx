@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import ModalRenderer from "../ModalRenderer";
 import { notifyError } from "@/app/utils/alerts";
 import { resetLogs } from "@/app/utils/server/resetLogs";
+import { stopServer } from "@/app/utils/server/serverActions";
 
 export const ServerCard = ({
     server
@@ -40,17 +41,15 @@ export const ServerCard = ({
     const handlePlayStop = async () => {
         try {
             if (isActive) {
-                setGlobalShowLoader("Stopping server...");
-                await invoke("stop_server");
-                setActiveServer(null);
+                await stopServer();
             } else if (isAnotherRunning) {
                 notifyError("Another server is already running.");
             } else {
                 setGlobalShowLoader("Starting server...");
                 resetLogs(); // Reset old logs
                 const startedServer = await invoke<ActiveServerInfo>("start_server", { server });
-                console.log(startedServer);
                 setActiveServer(startedServer);
+                await invoke("discord_set_server_running", { serverName: server.name });
             }
         } catch (err) {
             notifyError(err?.toString() ?? "Failed to start server");

@@ -82,15 +82,15 @@ export const Sidebar = () => {
                 <FaTerminal size={20} className={`${isActive('/terminal') && 'text-amber-400'} ${activeServer && 'text-green-400'}`} />
             </button>
 
-            <div className='w-full border-b border-amber-600'></div>
+            {/* <div className='w-full border-b border-amber-600'></div> */}
 
-            <button
+            {/* <button
                 className={`${baseBtn} ${isActive('/settings') ? activeBtn : inactiveBtn}`}
                 onClick={() => router.push('/settings')}
                 title='Settings'
             >
                 <IoMdSettings size={25} className={`${isActive('/settings') ? 'text-amber-400' : ''}`} />
-            </button>
+            </button> */}
         </nav>
     );
 }

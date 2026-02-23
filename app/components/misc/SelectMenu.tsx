@@ -1,6 +1,13 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react"
 
+type SelectMenuProps<T extends string> = {
+  items: readonly T[];
+  value: T;
+  onChange: (value: T) => void;
+  placeholder?: string;
+};
+
 export const SelectMenu = ({
     items,
     value,
@@ -32,7 +39,7 @@ export const SelectMenu = ({
     }, []);
 
     return (
-        <div className="w-full relative z-999" ref={menuRef}>
+        <div className="w-full relative" ref={menuRef}>
             <input 
                 className="outline-0 border-2 focus:border-amber-400 transition-[border] corner-squircle rounded-[20px] p-2 cursor-pointer w-full capitalize" 
                 value={value || placeholder}
@@ -43,7 +50,7 @@ export const SelectMenu = ({
             <AnimatePresence>
                 {open && items &&
                     <motion.div 
-                        className="w-full max-h-60 overflow-y-auto corner-squircle rounded-[20px] bg-cyan-900 absolute mt-2 app-scroll p-2 shadow-2xl"
+                        className="w-full max-h-60 overflow-y-auto overflow-x-visible corner-squircle rounded-[20px] bg-cyan-900 absolute mt-2 app-scroll p-2 shadow-2xl z-999"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}

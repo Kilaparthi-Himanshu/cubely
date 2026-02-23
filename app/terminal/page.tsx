@@ -9,8 +9,8 @@ export default function Page() {
         <div className='w-full h-full flex flex-col'>
             <ActiveServerBanner />
 
-            <div className='flex-1 w-full p-4 min-h-0'>
-                <div className='w-full h-full flex flex-row gap-4'>
+            <div className='flex-1 w-full p-2 min-h-0'>
+                <div className='w-full h-full flex flex-row gap-2'>
                     <TerminalPane eventName="mc-log" />
 
                     <TerminalPane eventName="playit-log" />

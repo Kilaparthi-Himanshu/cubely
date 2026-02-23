@@ -493,6 +493,29 @@ pub async fn start_server(
     Ok(info)
 }
 
+fn find_forge_entry(server_path: &str) -> Result<String, String> {
+    let dir = PathBuf::from(server_path);
+
+    for entry in fs::read_dir(&dir).map_err(|e| e.to_string())? {
+        let entry = entry.map_err(|e| e.to_string())?;
+        let path = entry.path();
+
+        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+            // New Forge versions with shim
+            if name.contains("shim.jar") {
+                return Ok(name.to_string());
+            }
+
+            // Old Forge versions with universal jar
+            if name.contains("forge-") && name.contains("universal.jar") {
+                return Ok(name.to_string());
+            }
+        }
+    }
+
+    Err("Could not find Forge launch jar".into())
+}
+
 #[tauri::command]
 pub fn stop_server(state: tauri::State<'_, AppState>) -> Result<(), String> {
     let mut active = state.active_server.lock().unwrap();
@@ -556,25 +579,34 @@ pub fn delete_server(
     Ok(())
 }
 
-fn find_forge_entry(server_path: &str) -> Result<String, String> {
-    let dir = PathBuf::from(server_path);
+#[tauri::command]
+pub fn send_mc_command(
+    command: String,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    let mut active_server = state.active_server.lock().unwrap();
 
-    for entry in fs::read_dir(&dir).map_err(|e| e.to_string())? {
-        let entry = entry.map_err(|e| e.to_string())?;
-        let path = entry.path();
+    let server = active_server
+        .as_mut()
+        .ok_or("No active server running")?;
 
-        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-            // New Forge versions with shim
-            if name.contains("shim.jar") {
-                return Ok(name.to_string());
-            }
-
-            // Old Forge versions with universal jar
-            if name.contains("forge-") && name.contains("universal.jar") {
-                return Ok(name.to_string());
-            }
-        }
+    // Echo command to UI BEFORE sending
+    if let Some(app) = state.app_handle.lock().unwrap().clone() {
+        let _ = app.emit("mc-log", format!("> {}", command));
     }
 
-    Err("Could not find Forge launch jar".into())
+    let stdin = server
+        .mc_child
+        .stdin
+        .as_mut()
+        .ok_or("Minecraft stdin not available")?;
+
+    use std::io::Write;
+
+    stdin
+        .write_all(command.as_bytes())
+        .and_then(|_| stdin.write_all(b"\n"))
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
 }

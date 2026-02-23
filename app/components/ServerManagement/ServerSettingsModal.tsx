@@ -20,7 +20,7 @@ export type ServerProperties = {
     online_mode: boolean,
     max_players: number,
     difficulty: string,
-    gamemode: string
+    gamemode: string,
     pvp: boolean,
     spawn_protection: number,
     view_distance: number,
@@ -45,6 +45,7 @@ export const ServerSettingsModal = ({
     server: ServerConfig;
 }) => {
     const DIFFICULTIES = ["peaceful", "easy", "normal", "hard"];
+    const GAMEMODES = ["survival", "creative", "adventure", "spectator"];
 
     const isMac = useAtomValue(isMacAtom);
     const [properties, setProperties] = useState<ServerProperties | null>(null);
@@ -58,6 +59,7 @@ export const ServerSettingsModal = ({
                 const props = await readServerProperties(server.path);
                 if (props) {
                     setProperties(props);
+                    console.log("GG: ", props);
                 }
             } catch(err) {
                 console.error(err);
@@ -407,6 +409,30 @@ export const ServerSettingsModal = ({
                                     ? "More players mean more chunks, mobs, and CPU usage."
                                     : "Default value is 20 players."
                                 }
+                        </span>
+                    </div>
+
+                    <div className="flex flex-col gap-3">
+                        <span>Game Mode:</span>
+
+                        <div className="w-1/2">
+                            <SelectMenu
+                                items={GAMEMODES}
+                                value={properties.gamemode}
+                                onChange={(value) => updatePropertyField("gamemode", value)}
+                                placeholder="Select game mode"
+                            />
+                        </div>
+
+                        <span className="text-xs text-gray-400">
+                            Controls how players interact with the world.
+                        </span>
+
+                        <span className="text-sm text-amber-400">
+                            {properties.gamemode === "survival" && "Players must gather resources to survive."}
+                            {properties.gamemode === "creative" && "Unlimited blocks and flying enabled."}
+                            {properties.gamemode === "adventure" && "Players cannot break blocks freely."}
+                            {properties.gamemode === "spectator" && "Fly through the world without interaction."}
                         </span>
                     </div>
 

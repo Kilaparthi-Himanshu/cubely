@@ -14,11 +14,13 @@ use crate::commands::server_management::start_server;
 use crate::commands::server_management::stop_server;
 use crate::commands::server_management::update_server_properties;
 use crate::commands::server_management::delete_server;
+use crate::commands::server_management::send_mc_command;
 use crate::commands::versions_loaders::fetch_fabric_versions;
 use crate::commands::versions_loaders::fetch_forge_versions;
 use crate::commands::versions_loaders::get_mc_versions;
 use crate::commands::versions_loaders::get_supported_loaders;
 use crate::commands::misc::open_folder;
+use crate::commands::discord_rpc::{init_discord_rpc, set_idle, discord_set_server_running};
 use crate::commands::versions_loaders::LoaderSupportCache;
 use crate::state::app_state::AppState;
 use tauri::Manager;
@@ -36,6 +38,13 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .manage(AppState::default())
         .setup(|app| {
+            // Start Discord Rich Presence
+            std::thread::spawn(|| {
+                // Discord client blocks briefly on connect, so keep it off main thread
+                init_discord_rpc();
+                set_idle();
+            });
+
             if cfg!(debug_assertions) {
                 app.handle().plugin(
                     tauri_plugin_log::Builder::default()
@@ -135,7 +144,10 @@ pub fn run() {
             read_server_config,
             update_server_config,
             open_folder,
-            delete_server
+            delete_server,
+            send_mc_command,
+            discord_set_server_running,
+            set_idle
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
