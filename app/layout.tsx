@@ -27,9 +27,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" className="h-full">
+        <html lang="en" className="h-full" data-theme="cyberpunk">
             <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-col overflow-hidden`}
+                className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-col overflow-hidden bg-neutral-950`}
             >
                 <ToastContainer
                     style={{ marginTop: "40px" }}

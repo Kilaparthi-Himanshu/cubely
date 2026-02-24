@@ -25,6 +25,9 @@ use crate::commands::versions_loaders::LoaderSupportCache;
 use crate::state::app_state::AppState;
 use tauri::Manager;
 
+pub mod transparent;
+use crate::transparent::apply_window_effects;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 #[tauri::command] //  to make it invocable from JS
 fn greet(name: &str, email: &str) -> String {
@@ -127,6 +130,8 @@ pub fn run() {
 
                 *slot = Some(playit_base);
             }
+
+            // apply_window_effects(app.handle());
 
             Ok(())
         })

@@ -87,11 +87,11 @@ export function TerminalPane({ eventName }: { eventName: LogTypes }) {
 
     return (
         <div className="flex flex-col flex-1 min-w-0 w-full h-full gap-2">
-            <span className="rounded-2xl corner-squircle bg-neutral-900 border border-amber-400 px-2 py-1 text-amber-400 font-semibold">{eventName === 'mc-log' ? 'Minecraft Terminal' : 'Tunnel Terminal (Playit)'}:</span>
+            <span className="rounded-2xl corner-squircle bg-neutral-900 border border-amber-400 px-2 py-1 text-amber-400 cyberpunk:text-cyber-purple font-semibold cyberpunk:bg-red-950/20 cyberpunk:rounded-none cyberpunk:rounded-tr-2xl cyberpunk:corner-tr-bevel cyberpunk-border cyberpunk-glow">{eventName === 'mc-log' ? 'Minecraft Terminal' : 'Tunnel Terminal (Playit)'}:</span>
 
             <div
                 ref={containerRef}
-                className="bg-neutral-900 border rounded-2xl corner-squircle text-green-400 font-mono text-sm p-2 overflow-y-auto w-full h-full app-scroll break-all min-w-0 flex-1 wrap-break-word whitespace-pre-wrap"
+                className={`bg-neutral-900 border rounded-2xl corner-squircle text-green-400 cyberpunk:text-cyber-sea-green font-mono text-sm p-2 overflow-y-auto w-full h-full app-scroll break-all min-w-0 flex-1 wrap-break-word whitespace-pre-wrap cyberpunk:bg-red-950/20 cyberpunk:rounded-none cyberpunk-border cyberpunk-glow ${eventName !== "mc-log" && 'cyberpunk:rounded-bl-2xl cyberpunk:corner-bl-bevel'}`}
             >
                 {lines.length === 0 
                     ?   <div className="w-full h-full flex justify-center items-center font-bold text-amber-400">
@@ -105,7 +105,7 @@ export function TerminalPane({ eventName }: { eventName: LogTypes }) {
 
             {eventName === "mc-log" && 
                 <input 
-                    className="w-full bg-neutral-900 border outline-0 text-md text-green-400 rounded-2xl corner-squircle p-2 h-11.5" 
+                    className="w-full bg-neutral-900 border outline-0 text-md text-green-400 cyberpunk:text-cyber-sea-green rounded-2xl corner-squircle p-2 h-11.5 cyberpunk:bg-red-950/20 cyberpunk:rounded-none cyberpunk:rounded-bl-2xl cyberpunk:corner-bl-bevel cyberpunk:px-4 cyberpunk-border cyberpunk-glow" 
                     placeholder={activeServer ? 'Input goes here...' : 'Start server to enter commands...'} 
                     disabled={!activeServer}
                     value={input}

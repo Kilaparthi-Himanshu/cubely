@@ -58,7 +58,7 @@ export default function Home() {
         <div className="w-full h-full flex flex-col">
             <ActiveServerBanner />
 
-            <div className={`bg-neutral-900 w-full h-full flex p-4 gap-4 flex-wrap app-scroll relative`}>
+            <div className={`bg-neutral-950 cyberpunk:bg-linear-to-br cyberpunk:from-red-950 cyberpunk:to-neutral-950 cyberpunk:backdrop-blur-2xl cyberpunk:border cyberpunk:border-red-500/30 cyberpunk:shadow-[0_0_40px_rgba(255,0,80,0.25)] w-full h-full flex p-4 gap-4 flex-wrap app-scroll relative`}>
 
                 <ServerCreateCard setIsOpen={setServerCreateModalOpen} />
 

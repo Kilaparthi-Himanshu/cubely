@@ -23,13 +23,13 @@ export const Sidebar = () => {
     const baseBtn =
         'w-full p-4 px-2 relative flex items-center justify-center cursor-pointer';
     const activeBtn =
-        'bg-stone-600 text-white';
+        'bg-stone-600 cyberpunk:bg-red-950 text-white cyberpunk:outline cyberpunk:outline-red-500/30';
     const inactiveBtn =
-        'bg-stone-800 hover:bg-stone-600 text-neutral-300';
+        'bg-stone-800 hover:bg-stone-600 cyberpunk:bg-red-900/80 cyberpunk:hover:bg-red-950 text-neutral-300';
 
     return (
         <nav 
-            className={`h-full ${sideOpen ? 'w-70' : 'w-15'} bg-neutral-950 flex flex-col items-center relative transition-[width] duration-200 border-r border-r-neutral-500`} 
+            className={`h-full ${sideOpen ? 'w-70' : 'w-15'} bg-neutral-950 cyberpunk:bg-red-950/40 cyberpunk-border cyberpunk-glow flex flex-col items-center relative transition-[width] duration-200 border-r border-r-neutral-500`} 
             // onPointerEnter={() => setSideOpen(true)} 
             // onPointerLeave={() => setSideOpen(false)}
         >
@@ -69,17 +69,17 @@ export const Sidebar = () => {
                 onClick={() => router.push('/')}
                 title='Home'
             >
-                <FaHome size={25} className={`${isActive('/') ? 'text-amber-400' : ''}`} />
+                <FaHome size={25} className={`${isActive('/') ? 'text-amber-400 cyberpunk:text-cyber-yellow' : ''}`} />
             </button>
 
-            <div className='w-full border-b border-amber-600'></div>
+            <div className='w-full border-b border-amber-600 cyberpunk:border-cyber-cyan'></div>
 
             <button
                 className={`${baseBtn} ${isActive('/terminal') ? activeBtn : inactiveBtn}`}
                 onClick={() => router.push('/terminal')}
                 title='Terminal'
             >
-                <FaTerminal size={20} className={`${isActive('/terminal') && 'text-amber-400'} ${activeServer && 'text-green-400'}`} />
+                <FaTerminal size={20} className={`${isActive('/terminal') && 'text-amber-400 cyberpunk:text-cyber-yellow'} ${activeServer && 'text-green-400 cyberpunk:text-cyber-sea-green'}`} />
             </button>
 
             {/* <div className='w-full border-b border-amber-600'></div> */}
