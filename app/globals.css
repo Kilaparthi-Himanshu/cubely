@@ -64,6 +64,10 @@
     @apply  cyberpunk:shadow-[0_0_10px_var(--cyber-blue)]
 }
 
+.cyberpunk-input {
+    clip-path: polygon(0% 15%, 0 0, 15% 0%, 85% 0%, 100% 0, 100% 15%, 100% 85%, 85% 85%, 19% 85%, 13% 100%, 0 100%, 0% 85%);
+}
+
 body {
   /* background: var(--background); */
   color: var(--foreground);
@@ -80,13 +84,13 @@ body {
 }
 
 .app-scroll::-webkit-scrollbar-thumb {
-    background-color: #90ee90;
+    background-color: #39c4b6;
     border-radius: 9999px;
     /* border: 2px solid #0a0a0a; */
 }
 
 .app-scroll::-webkit-scrollbar-thumb:hover {
-    background-color: #6fdc6f;
+    background-color: #0abdc6;
 }
 
 /* Firefox */

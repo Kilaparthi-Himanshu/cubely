@@ -242,7 +242,7 @@ export const ServerSettingsModal = ({
             // }}
         >
             <motion.div 
-                className={`w-210 h-full bg-gray-800 corner-squircle rounded-[30px] flex flex-col items-center ${isMac && 'rounded-xl'} relative max-h-225 overflow-hidden`}
+                className={`w-210 h-full bg-gray-800 corner-squircle rounded-[30px] flex flex-col items-center ${isMac && 'rounded-xl'} relative max-h-225 overflow-hidden cyberpunk-border cyberpunk-glow cyberpunk:bg-cyber-dark-blue/20 cyberpunk:backdrop-blur-xl cyberpunk:rounded-none cyberpunk:rounded-bl-[28px] cyberpunk:corner-bl-bevel`}
                 onClick={(e) => e.stopPropagation()}
                 initial={{ y: -10 }}
                 animate={{ y: 0 }}

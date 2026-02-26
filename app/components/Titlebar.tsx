@@ -30,7 +30,7 @@ export const Titlebar = () => {
 
     return (
         <div 
-            className={`w-full bg-linear-60 from-blue-300 to-neutral-950 h-8.75 flex items-center justify-between ${isMac && 'justify-end pr-1'} cyberpunk:bg-linear-to-r cyberpunk:from-red-950 cyberpunk:to-neutral-950 cyberpunk:from-50%`}
+            className={`w-full bg-linear-60 from-blue-300 to-neutral-950 h-8.75 flex items-center justify-between ${isMac && 'justify-end pr-1'} cyberpunk:bg-linear-to-r cyberpunk:from-red-950 cyberpunk:to-neutral-950 cyberpunk:from-50% cyberpunk-border cyberpunk-glow`}
             data-tauri-drag-region
         >
             <div className={`${isMac ? "ml-18.75 text-emerald-500 cyberpunk:text-cyber-cyan" : "text-emerald-700 cyberpunk:text-cyber-cyan"} font-semibold font-mono select-none px-2`}>

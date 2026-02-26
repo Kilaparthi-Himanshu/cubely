@@ -146,7 +146,7 @@ export const ServerCreateModal = ({
             // }}
         >
             <motion.div 
-                className={`w-110 h-max bg-gray-800 corner-squircle rounded-[30px] flex flex-col items-center ${isMac && 'rounded-xl'} relative max-h-[calc(100vh-50px)] overflow-hidden`}
+                className={`w-110 h-max bg-gray-800 corner-squircle rounded-[30px] flex flex-col items-center ${isMac && 'rounded-xl'} relative max-h-[calc(100vh-50px)] overflow-hidden cyberpunk-border cyberpunk-glow cyberpunk:bg-cyber-dark-blue/20 cyberpunk:backdrop-blur-xl cyberpunk:rounded-none cyberpunk:rounded-bl-[28px] cyberpunk:corner-bl-bevel`}
                 onClick={(e) => e.stopPropagation()}
                 initial={{ y: -10 }}
                 animate={{ y: 0 }}
@@ -165,27 +165,27 @@ export const ServerCreateModal = ({
                     }} 
                 />
 
-                <div className="w-full h-max p-4 pr-2">
-                    <span className="text-2xl font-semibold">Create Server</span>
+                <div className="w-full h-max p-4 pr-2 ">
+                    <span className="text-2xl font-semibold cyberpunk:bg-red-900 cyberpunk-input cyberpunk:px-3 cyberpunk:py-2">Create Server</span>
                 </div>
 
                 <div className="border-b border-amber-400 w-full" />
 
-                <div className="w-full h-full flex flex-col gap-8 p-4 font-semibold overflow-y-auto overflow-x-hidden app-scroll">
+                <div className="w-full h-full flex flex-col gap-8 p-4 font-semibold overflow-y-auto overflow-x-hidden app-scroll cyberpunk:text-cyber-purple">
                     <div className="flex flex-col gap-3">
                         <span className="underline">Instance Name:</span>
 
                         <input 
-                            className="outline-0 border-2 focus:border-amber-400 transition-[border] corner-squircle rounded-[20px] p-2" 
+                            className="outline-0 border-2 focus:border-amber-400 transition-[border] corner-squircle rounded-[20px] p-2 cyberpunk:rounded-none cyberpunk:rounded-br-xl cyberpunk:corner-br-bevel cyberpunk:focus:border-cyber-yellow" 
                             value={instanceName ?? ""}
                             onChange={(e) => setInstanceName(e.target.value)}
                         />
 
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-400 cyberpunk:text-cyber-green">
                             Allowed: letters, numbers, - and _
                         </span>
 
-                        <span className="text-xs text-amber-400">
+                        <span className="text-xs text-amber-400 cyberpunk:text-cyber-blue">
                             Intance name cannot be changed after creation.
                         </span>
                     </div>
@@ -205,7 +205,7 @@ export const ServerCreateModal = ({
                         <span className="underline">Server Type:</span>
 
                         {!instanceVersion && (
-                            <span className="text-sm text-gray-400">
+                            <span className="text-sm text-gray-400 cyberpunk:text-cyber-green">
                                 Select a version first
                             </span>
                         )}
@@ -241,7 +241,7 @@ export const ServerCreateModal = ({
                             />
                         </div>
 
-                        <span className="text-sm text-amber-400">
+                        <span className="text-sm text-amber-400 cyberpunk:text-cyber-blue">
                             {ramGB <= 3 && "Good for small vanilla servers"}
                             {ramGB === 4 && "Recommended for most servers ⭐"}
                             {ramGB > 4 && "Best for modded servers"}
@@ -250,7 +250,7 @@ export const ServerCreateModal = ({
 
                     <div className="w-full flex justify-end">
                         <button 
-                            className="bg-amber-400 px-4 py-2 text-stone-800 corner-squircle rounded-2xl cursor-pointer shadow-xl active:scale-97 active:bg-[#bb8e1e] transition-[scale,background]"
+                            className="bg-amber-400 px-4 py-2 text-stone-800 corner-squircle rounded-2xl cursor-pointer shadow-xl active:scale-97 active:bg-[#bb8e1e] transition-[scale,background] cyberpunk:bg-cyber-dark-yellow cyberpunk:text-cyber-yellow cyberpunk:rounded-none cyberpunk:rounded-br-xl cyberpunk:corner-br-bevel cyberpunk:rounded-tl-xl cyberpunk:corner-tl-bevel cyberpunk-border cyberpunk-glow"
                             onClick={handleCreateServer}
                         >
                             Create!

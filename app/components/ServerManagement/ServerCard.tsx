@@ -12,6 +12,7 @@ import ModalRenderer from "../ModalRenderer";
 import { notifyError } from "@/app/utils/alerts";
 import { resetLogs } from "@/app/utils/server/resetLogs";
 import { stopServer } from "@/app/utils/server/serverActions";
+import { useRouter } from "next/navigation";
 
 export const ServerCard = ({
     server
@@ -38,6 +39,8 @@ export const ServerCard = ({
     const setGlobalShowLoader = useSetAtom(showGlobalLoaderAtom);
     const setHideGlobalLoader = useSetAtom(hideGlobalLoaderAtom);
 
+    const router = useRouter();
+
     const handlePlayStop = async () => {
         try {
             if (isActive) {
@@ -50,6 +53,7 @@ export const ServerCard = ({
                 const startedServer = await invoke<ActiveServerInfo>("start_server", { server });
                 setActiveServer(startedServer);
                 await invoke("discord_set_server_running", { serverName: server.name });
+                router.replace('/terminal');
             }
         } catch (err) {
             notifyError(err?.toString() ?? "Failed to start server");
