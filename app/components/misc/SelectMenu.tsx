@@ -8,17 +8,12 @@ type SelectMenuProps<T extends string> = {
   placeholder?: string;
 };
 
-export const SelectMenu = ({
+export const SelectMenu = <T extends string>({
     items,
     value,
     onChange,
     placeholder = "Select"
-}: {
-    items: string[]
-    value: string
-    onChange: (value: string) => void
-    placeholder?: string
-}) => {
+}: SelectMenuProps<T>) => {
     const [open, setOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement | null>(null);
 

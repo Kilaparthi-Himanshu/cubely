@@ -4,13 +4,35 @@ import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
 import { IoWarningOutline } from 'react-icons/io5';
 import { notifyError } from '@/app/utils/alerts';
-type DeleteModalProps = {
+type AlertModalProps = {
     isOpen?: boolean;
     setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     onConfirm: () => void | Promise<void>;
+
+    title?: string;
+    description?: string;
+
+    confirmText?: string;
+    cancelText?: string;
+
+    confirmVariant?: "danger" | "warning" | "default";
 }
 
-const DeleteConfirmModal = ({ setIsOpen, onConfirm }: DeleteModalProps) => {;
+const AlertModal = ({ 
+    setIsOpen,
+    onConfirm,
+    title = "Are you sure?",
+    description = "This action can't be reverted!",
+    confirmText = "Confirm",
+    cancelText = "Cancel",
+    confirmVariant = "default"
+}: AlertModalProps) => {
+    const confirmStyles = {
+        danger: 'bg-red-900 rounded-lg border border-red-500 px-6 py-2 text-white active:scale-95 active:bg-red-500/40 transition-[scale,background] cursor-pointer cyberpunk:rounded-none cyberpunk:rounded-br-2xl cyberpunk:corner-br-bevel',
+        warning: 'bg-yellow-700 border-yellow-400 active:bg-yellow-500/40 rounded-lg border px-6 py-2 text-white active:scale-95 transition-[scale,background] cursor-pointer cyberpunk:rounded-none cyberpunk:rounded-br-2xl cyberpunk:corner-br-bevel',
+        default: 'bg-neutral-700 border-neutral-500'
+    }
+
     const handleConfirm = async () => {
         try {
             await onConfirm();
@@ -45,21 +67,21 @@ const DeleteConfirmModal = ({ setIsOpen, onConfirm }: DeleteModalProps) => {;
             >
                 <div className='flex-3/4 flex flex-col items-center justify-center gap-2 text-2xl border-b border-neutral-600 pb-3'>
                     <IoWarningOutline size={60} className='text-red-400 cyberpunk:text-cyber-purple' />
-                    <span className='cyberpunk:text-cyber-yellow'>Are You sure?</span>
-                    <span className='text-xl text-neutral-300 cyberpunk:text-cyber-dark-yellow'>This action can't be reverted!</span>
+                    <span className='cyberpunk:text-cyber-yellow'>{title}</span>
+                    <span className='text-xl text-neutral-300 cyberpunk:text-cyber-dark-yellow'>{description}</span>
                 </div>
                 <div className='flex-1/4 flex items-center justify-end p-4 gap-2'>
                     <button 
                         className='bg-neutral-700 rounded-lg border border-neutral-500 px-6 py-2 text-white active:scale-95 active:bg-neutral-800 transition-[scale,background] cursor-pointer cyberpunk:rounded-none  cyberpunk:rounded-tl-2xl cyberpunk:corner-tl-bevel'
                         onClick={handleReject}
                     >
-                        Cancel
+                        {cancelText}
                     </button>
                     <button 
-                        className='bg-red-900 rounded-lg border border-red-500 px-6 py-2 text-white active:scale-95 active:bg-red-500/40 transition-[scale,background] cursor-pointer cyberpunk:rounded-none  cyberpunk:rounded-br-2xl cyberpunk:corner-br-bevel'
+                        className={`${confirmStyles[confirmVariant]} ...`}
                         onClick={handleConfirm}
                     >
-                        Delete
+                        {confirmText}
                     </button>
                 </div>
             </motion.div>
@@ -67,11 +89,30 @@ const DeleteConfirmModal = ({ setIsOpen, onConfirm }: DeleteModalProps) => {;
     );
 }
 
-export const DeleteSessionModalRenderer = ({ isOpen, setIsOpen, onConfirm}: DeleteModalProps) => {
+export const AlertModalRenderer = ({ 
+    isOpen, 
+    setIsOpen, 
+    onConfirm,
+    title,
+    description,
+    confirmText,
+    cancelText,
+    confirmVariant,
+}: AlertModalProps) => {
 
     return (
         <AnimatePresence>
-            {isOpen && <DeleteConfirmModal setIsOpen={setIsOpen} onConfirm={onConfirm} />}
+            {isOpen && 
+                <AlertModal 
+                    setIsOpen={setIsOpen} 
+                    onConfirm={onConfirm} 
+                    title={title}
+                    description={description}
+                    confirmText={confirmText}
+                    cancelText={cancelText}
+                    confirmVariant={confirmVariant}
+                />
+            }
         </AnimatePresence>
     );
 }

@@ -13,7 +13,8 @@ import { refreshServers } from "@/app/utils/server/refreshServers";
 import DiscreteSlider from "../misc/Slider";
 import { ramMarks } from "./ServerCreateModal";
 import { deleteServer } from "@/app/utils/server/deleteServer";
-import { DeleteSessionModalRenderer } from "../misc/DeleteConfirmModal";
+import { AlertModalRenderer } from "../misc/AlertModal";
+import isEqual from "lodash.isequal";
 
 export type ServerProperties = {
     motd: string,
@@ -21,6 +22,7 @@ export type ServerProperties = {
     max_players: number,
     difficulty: string,
     gamemode: string,
+    force_gamemode: boolean,
     pvp: boolean,
     spawn_protection: number,
     view_distance: number,
@@ -52,6 +54,10 @@ export const ServerSettingsModal = ({
     const [loading, setLoading] = useState(false);
     const [config, setConfig] = useState<EditableServerConfig | null>(null);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [unsavedModalOpen, setUnsavedModalOpen] = useState(false);
+
+    const [initialProperties, setInitialProperties] = useState<ServerProperties | null>(null);
+    const [initialConfig, setInitialConfig] = useState<ServerConfig | null>(null);
 
     useEffect(() => {
         async function getServerProperties() {
@@ -59,6 +65,7 @@ export const ServerSettingsModal = ({
                 const props = await readServerProperties(server.path);
                 if (props) {
                     setProperties(props);
+                    setInitialProperties(structuredClone(props));
                     console.log("GG: ", props);
                 }
             } catch(err) {
@@ -76,6 +83,7 @@ export const ServerSettingsModal = ({
                 const props = await readServerConfig(server.path);
                 if (props) {
                     setConfig(props);
+                    setInitialConfig(structuredClone(props));
                     console.log(props);
                 }
             } catch(err) {
@@ -257,7 +265,12 @@ export const ServerSettingsModal = ({
                     title="Close"
                     onClick={(e) => {
                         e.preventDefault();
-                        setIsOpen(false);
+
+                        if (!isEqual(properties, initialProperties) || !isEqual(config, initialConfig)) {
+                            setUnsavedModalOpen(true);
+                        } else {
+                            setIsOpen(false);
+                        }
                     }}
                 />
 
@@ -276,7 +289,7 @@ export const ServerSettingsModal = ({
 
                 <div className="w-full h-full flex flex-col gap-8 p-4 font-semibold overflow-y-auto overflow-x-hidden app-scroll">
                     <div className="flex flex-col gap-3 w-1/2">
-                        <span>Instanc Name:</span>
+                        <span>Instance Name:</span>
 
                         <input
                             className="outline-0 border-2 focus:border-amber-400 transition-[border] corner-squircle rounded-[20px] p-2 min-h-11 h-11 max-h-50 app-scroll cursor-not-allowed opacity-60 cyberpunk:rounded-none cyberpunk:rounded-br-xl cyberpunk:corner-br-bevel cyberpunk:focus:border-cyber-yellow" 
@@ -434,6 +447,33 @@ export const ServerSettingsModal = ({
                             {properties.gamemode === "adventure" && "Players cannot break blocks freely."}
                             {properties.gamemode === "spectator" && "Fly through the world without interaction."}
                         </span>
+
+                        {/* Warning */}
+                        {!properties.force_gamemode && (
+                            <span className="text-xs text-amber-400">
+                                ⚠ Changes won’t apply to existing players.
+                                Enable "Force Gamemode" to enforce it.
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col gap-3 h-max">
+                        <div className="flex gap-3 h-max">
+                            <span>Force Gamemode:</span>
+
+                            <SwitchToggle 
+                                checked={properties.force_gamemode}
+                                onChange={(e) => updatePropertyField("force_gamemode", e.target.checked)}
+                            />
+                        </div>
+
+                        <span className="text-xs text-gray-400">
+                            Force gamemode on join.
+                        </span>
+
+                        <span className="text-xs text-gray-400">
+                            Applies the selected gamemode every time a player joins the server.
+                        </span>
                     </div>
 
                     <div className="flex flex-col gap-3">
@@ -570,15 +610,32 @@ export const ServerSettingsModal = ({
 
                     <div className="w-max flex justify-end absolute bottom-4 right-4">
                         <button 
-                            className="bg-amber-400 px-4 py-2 text-stone-800 corner-squircle rounded-2xl cursor-pointer shadow-xl active:scale-97 active:bg-[#bb8e1e] transition-[scale,background]"
+                            className="bg-amber-400 px-4 py-2 text-stone-800 corner-squircle rounded-2xl cursor-pointer shadow-xl active:scale-97 active:bg-[#bb8e1e] transition-[scale,background] cyberpunk:bg-cyber-dark-yellow cyberpunk:text-cyber-gray cyberpunk:rounded-none cyberpunk:rounded-br-xl cyberpunk:corner-br-bevel cyberpunk:rounded-tl-xl cyberpunk:corner-tl-bevel cyberpunk-border cyberpunk-glow"
                             onClick={handleEditServerProperties}
                         >
-                            Submit
+                            Save
                         </button>
                     </div>
                 </div>
 
-                <DeleteSessionModalRenderer isOpen={deleteModalOpen} setIsOpen={setDeleteModalOpen} onConfirm={handleDeleteServer} />
+                <AlertModalRenderer 
+                    isOpen={deleteModalOpen} 
+                    setIsOpen={setDeleteModalOpen} 
+                    onConfirm={handleDeleteServer} 
+                    confirmText="Delete"
+                    confirmVariant="danger"
+                />
+
+                <AlertModalRenderer 
+                    isOpen={unsavedModalOpen} 
+                    setIsOpen={setUnsavedModalOpen} 
+                    onConfirm={() => setIsOpen(false)} 
+                    title="Unsaved Changes"
+                    description="Discard changes?"
+                    confirmText="Discard"
+                    cancelText="Keep Editing"
+                    confirmVariant="warning"
+                />
             </motion.div>
         </motion.div>
     );

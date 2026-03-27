@@ -27,7 +27,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
     return (
-        <html lang="en" className="h-full" data-theme="cyberpunk">
+        <html lang="en" className="h-full" suppressHydrationWarning>
+            <head>
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `
+                        (function() {
+                            try {
+                                const stored = localStorage.getItem("theme");
+                                if (stored) {
+                                    document.documentElement.dataset.theme = stored;
+                                } else {
+                                    document.documentElement.dataset.theme = "default";
+                                }
+                            } catch(e) {
+                                document.documentElement.dataset.theme = "default";
+                            }
+                        })();
+                        `,
+                    }}
+                />
+            </head>
+
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-col overflow-hidden bg-neutral-950`}
             >

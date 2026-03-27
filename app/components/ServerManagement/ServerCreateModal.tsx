@@ -250,7 +250,7 @@ export const ServerCreateModal = ({
 
                     <div className="w-full flex justify-end">
                         <button 
-                            className="bg-amber-400 px-4 py-2 text-stone-800 corner-squircle rounded-2xl cursor-pointer shadow-xl active:scale-97 active:bg-[#bb8e1e] transition-[scale,background] cyberpunk:bg-cyber-dark-yellow cyberpunk:text-cyber-yellow cyberpunk:rounded-none cyberpunk:rounded-br-xl cyberpunk:corner-br-bevel cyberpunk:rounded-tl-xl cyberpunk:corner-tl-bevel cyberpunk-border cyberpunk-glow"
+                            className="bg-amber-400 px-4 py-2 text-stone-800 corner-squircle rounded-2xl cursor-pointer shadow-xl active:scale-97 active:bg-[#bb8e1e] transition-[scale,background] cyberpunk:bg-cyber-dark-yellow cyberpunk:text-cyber-gray cyberpunk:rounded-none cyberpunk:rounded-br-xl cyberpunk:corner-br-bevel cyberpunk:rounded-tl-xl cyberpunk:corner-tl-bevel cyberpunk-border cyberpunk-glow"
                             onClick={handleCreateServer}
                         >
                             Create!

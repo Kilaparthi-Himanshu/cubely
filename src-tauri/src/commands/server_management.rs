@@ -95,6 +95,7 @@ pub struct ServerProperties {
     pub max_players: u32,
     pub difficulty: String,
     pub gamemode: String,
+    pub force_gamemode: bool,
     pub pvp: bool,
     pub spawn_protection: u32,
     pub view_distance: u32,
@@ -128,15 +129,34 @@ pub fn read_server_properties(server_path: String) -> Result<ServerProperties, S
     let map = map_server_properties(&server_path)?;
 
     Ok(ServerProperties {
-        motd: map.get("motd").cloned().unwrap_or_default(),
-        online_mode: map.get("online-mode").map(|v| v == "true").unwrap_or(true),
+        motd: map
+            .get("motd")
+            .cloned()
+            .unwrap_or_default(),
+        online_mode: map
+            .get("online-mode")
+            .map(|v| v == "true")
+            .unwrap_or(true),
         max_players: map
             .get("max-players")
             .and_then(|v| v.parse().ok())
             .unwrap_or(20),
-        difficulty: map.get("difficulty").cloned().unwrap_or("easy".into()),
-        gamemode: map.get("gamemode").cloned().unwrap_or("survival".into()),
-        pvp: map.get("pvp").map(|v| v == "true").unwrap_or(true),
+        difficulty: map
+            .get("difficulty")
+            .cloned()
+            .unwrap_or("easy".into()),
+        gamemode: map
+            .get("gamemode")
+            .cloned()
+            .unwrap_or("survival".into()),
+        force_gamemode: map
+            .get("force-gamemode")
+            .map(|v| v == "true")
+            .unwrap_or(false),
+        pvp: map
+            .get("pvp")
+            .map(|v| v == "true")
+            .unwrap_or(true),
         spawn_protection: map
             .get("spawn-protection")
             .and_then(|v| v.parse().ok())
@@ -169,16 +189,11 @@ pub async fn update_server_properties(
     map.insert("max-players".into(), props.max_players.to_string());
     map.insert("difficulty".into(), props.difficulty);
     map.insert("gamemode".into(), props.gamemode);
+    map.insert("force-gamemode".into(), props.force_gamemode.to_string());
     map.insert("pvp".into(), props.pvp.to_string());
-    map.insert(
-        "spawn-protection".into(),
-        props.spawn_protection.to_string(),
-    );
+    map.insert("spawn-protection".into(), props.spawn_protection.to_string());
     map.insert("view-distance".into(), props.view_distance.to_string());
-    map.insert(
-        "simulation-distance".into(),
-        props.simulation_distance.to_string(),
-    );
+    map.insert("simulation-distance".into(), props.simulation_distance.to_string());
     map.insert("server-port".into(), props.server_port.to_string());
 
     //  Write back EVERYTHING (including unknown keys)

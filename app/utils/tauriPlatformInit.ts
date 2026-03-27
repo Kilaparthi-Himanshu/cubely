@@ -10,14 +10,14 @@ export function TauriPlatformInit() {
 
     useEffect(() => {
         if (!isTauri()) {
-        // Web build fallback
-        setIsMac(false);
-        return;
+            // Web build fallback
+            setIsMac(false);
+            return;
         }
 
         import('@tauri-apps/plugin-os').then(({ platform }) => {
-        const os = platform(); // sync in v2
-        setIsMac(os === 'macos');
+            const os = platform(); // sync in v2
+            setIsMac(os === 'macos');
         });
     }, [setIsMac]);
 

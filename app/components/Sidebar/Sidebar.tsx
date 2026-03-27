@@ -89,7 +89,7 @@ export const Sidebar = () => {
                 onClick={() => router.push('/settings')}
                 title='Settings'
             >
-                <IoMdSettings size={25} className={`${isActive('/settings') ? 'text-amber-400' : ''}`} />
+                <IoMdSettings size={25} className={`${isActive('/settings') ? 'text-amber-400 cyberpunk:text-cyber-yellow' : ''}`} />
             </button>
         </nav>
     );
