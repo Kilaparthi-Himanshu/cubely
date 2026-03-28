@@ -14,6 +14,8 @@ import { resetLogs } from "@/app/utils/server/resetLogs";
 import { stopServer } from "@/app/utils/server/serverActions";
 import { useRouter } from "next/navigation";
 
+const MAX_BLOCKS = 16;
+
 export const ServerCard = ({
     server
 }: {
@@ -41,7 +43,6 @@ export const ServerCard = ({
 
     const router = useRouter();
 
-    const MAX_BLOCKS = 16;
     const filledBlocks = Math.min(ram_gb, MAX_BLOCKS);
 
     const loaderIcon = {
@@ -84,7 +85,7 @@ export const ServerCard = ({
                         onClick={handlePlayStop}
                         disabled={isAnotherRunning}
                         className={`
-                            flex-1 flex items-center justify-center transition-opacity duration-150 cursor-pointer pointer-events-auto group z-100
+                            flex-1 flex items-center justify-center transition-opacity duration-150 cursor-pointer pointer-events-auto group z-100  backdrop-blur-[1px]
                             ${isAnotherRunning ? "opacity-30 cyberpunk:opacity-40 cursor-not-allowed" : "opacity-0 hover:opacity-100"}
                             ${isActive ? "bg-red-500/90" : "bg-green-500/90 cyberpunk:bg-green-900/80"}
                         `}
@@ -110,7 +111,7 @@ export const ServerCard = ({
                         onClick={() => setServerSettingsModalOpen(true)}
                         disabled={activeServer !== null}
                         className={`
-                            flex-1 flex items-center justify-center bg-gray-500/90 cyberpunk:bg-gray-800/80 transition-opacity duration-150 cursor-pointer pointer-events-auto group z-100
+                            flex-1 flex items-center justify-center bg-gray-500/90 cyberpunk:bg-gray-800/80 transition-opacity duration-150 cursor-pointer pointer-events-auto backdrop-blur-[1px] group z-100
                             ${activeServer ? "opacity-30 cyberpunk:opacity-40 cursor-not-allowed" : "opacity-0 hover:opacity-100"}
                         `}
                     >

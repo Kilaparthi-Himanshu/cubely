@@ -280,7 +280,7 @@ export const ServerSettingsModal = ({
 
                 <div className="border-t border-amber-400 w-full flex justify-end">
                     <button 
-                        className={`z-300 absolute right-4 p-2 text-green-800 font-bold bg-amber-400 active:bg-amber-500 transition-colors text-[10px] cursor-pointer ${isMac ? 'rounded-b-2xl' : 'corner-b-bevel rounded-b-[10px]'}`}
+                        className={`z-300 absolute right-4 p-2 text-green-800 font-bold bg-amber-400 active:bg-amber-500 transition-colors text-[10px] cursor-pointer ${isMac ? 'rounded-b-2xl' : 'corner-b-squircle rounded-b-2xl cyberpunk:corner-b-bevel cyberpunk:rounded-b-[10px]'}`}
                         onClick={openServerFolder}
                     >
                         Open Folder
