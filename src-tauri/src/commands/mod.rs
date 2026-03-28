@@ -1,9 +1,9 @@
+pub mod discord_rpc;
+pub mod java_manager;
+pub mod misc;
+pub mod ngrok_manager;
+pub mod playit_manager;
 pub mod server_creation;
 pub mod server_management;
 pub mod system;
 pub mod versions_loaders;
-pub mod misc;
-pub mod java_manager;
-pub mod ngrok_manager;
-pub mod playit_manager;
-pub mod discord_rpc;

@@ -1,9 +1,5 @@
 use tauri::Manager;
-use window_vibrancy::{
-    apply_acrylic,
-    apply_vibrancy,
-    NSVisualEffectMaterial,
-};
+use window_vibrancy::{apply_acrylic, apply_vibrancy, NSVisualEffectMaterial};
 
 pub fn apply_window_effects(app: &tauri::AppHandle) {
     let window = app.get_webview_window("main").unwrap();
@@ -18,12 +14,6 @@ pub fn apply_window_effects(app: &tauri::AppHandle) {
     // 🍎 MacOS
     #[cfg(target_os = "macos")]
     {
-        apply_vibrancy(
-            &window,
-            NSVisualEffectMaterial::HudWindow,
-            None,
-            None,
-        )
-        .ok();
+        apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None).ok();
     }
 }

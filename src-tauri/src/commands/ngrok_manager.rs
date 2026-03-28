@@ -1,4 +1,8 @@
-use std::{fs, path::{Path, PathBuf}, process::Command};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 use reqwest::Client;
 use zip::ZipArchive;
@@ -7,10 +11,14 @@ use zip::ZipArchive;
 
 fn ngrok_binary_name() -> &'static str {
     #[cfg(target_os = "windows")]
-    { "ngrok.exe" }
+    {
+        "ngrok.exe"
+    }
 
     #[cfg(not(target_os = "windows"))]
-    { "ngrok" }
+    {
+        "ngrok"
+    }
 }
 
 pub fn ngrok_binary(base: &PathBuf) -> PathBuf {
@@ -27,13 +35,19 @@ fn zip_path(base: &PathBuf) -> PathBuf {
 
 fn ngrok_download_url() -> &'static str {
     #[cfg(target_os = "windows")]
-    { "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip" }
+    {
+        "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip"
+    }
 
     #[cfg(target_os = "macos")]
-    { "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-darwin-amd64.zip" }
+    {
+        "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-darwin-amd64.zip"
+    }
 
     #[cfg(target_os = "linux")]
-    { "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip" }
+    {
+        "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip"
+    }
 }
 
 pub async fn install_ngrok(base: &PathBuf) -> Result<(), String> {

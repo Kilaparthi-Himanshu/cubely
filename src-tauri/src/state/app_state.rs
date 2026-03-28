@@ -1,5 +1,8 @@
 use crate::commands::{server_management::ActiveServer, versions_loaders::LoaderSupportCache};
-use std::{path::PathBuf, sync::{Arc, Mutex}};
+use std::{
+    path::PathBuf,
+    sync::{Arc, Mutex},
+};
 use tauri::AppHandle;
 
 #[derive(Default)]

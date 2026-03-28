@@ -1,7 +1,10 @@
-use std::{path::{Path, PathBuf}, process::Command};
-use tauri::{AppHandle, Manager};
 use reqwest::Client;
 use std::{fs, io::Write};
+use std::{
+    path::{Path, PathBuf},
+    process::Command,
+};
+use tauri::{AppHandle, Manager};
 use zip::ZipArchive;
 
 /// Installing Java
@@ -11,6 +14,7 @@ pub enum JavaVersion {
     Java8,
     Java17,
     Java21,
+    Java25,
 }
 
 pub fn require_java(mc_version: &str) -> JavaVersion {
@@ -20,17 +24,22 @@ pub fn require_java(mc_version: &str) -> JavaVersion {
         .collect();
 
     if parts.len() < 2 {
-        return JavaVersion::Java17
+        return JavaVersion::Java17;
     }
 
     let major = parts[0];
     let minor = parts[1];
 
     match (major, minor) {
-        (1, 0..=16) => JavaVersion::Java8, // 1.0 - 1.16.x
+        (1, 0..=16) => JavaVersion::Java8,   // 1.0 - 1.16.x
         (1, 17..=20) => JavaVersion::Java17, // 1.17 - 1.20.x
-        (1, 21..) => JavaVersion::Java21, // 1.21+
-        _ => JavaVersion::Java17, // Fallback
+        (1, 21..) => JavaVersion::Java21,    // 1.21+
+
+        // NEW VERSIONING SYSTEM
+        (26, _) => JavaVersion::Java25, // 26.x
+
+        // Fallback
+        _ => JavaVersion::Java25,
     }
 }
 
@@ -48,6 +57,7 @@ pub fn java_binary(base: &PathBuf, version: JavaVersion) -> PathBuf {
         JavaVersion::Java8 => base.join("8").join(bin),
         JavaVersion::Java17 => base.join("17").join(bin),
         JavaVersion::Java21 => base.join("21").join(bin),
+        JavaVersion::Java25 => base.join("25").join(bin),
     }
 }
 
@@ -55,44 +65,90 @@ fn java_download_url(version: JavaVersion) -> &'static str {
     match version {
         JavaVersion::Java8 => {
             #[cfg(target_os = "windows")]
-            { "https://api.adoptium.net/v3/binary/latest/8/ga/windows/x64/jre/hotspot/normal/eclipse" }
+            {
+                "https://api.adoptium.net/v3/binary/latest/8/ga/windows/x64/jre/hotspot/normal/eclipse"
+            }
 
             #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
-            { "https://api.adoptium.net/v3/binary/latest/8/ga/mac/x64/jre/hotspot/normal/eclipse" }
+            {
+                "https://api.adoptium.net/v3/binary/latest/8/ga/mac/x64/jre/hotspot/normal/eclipse"
+            }
 
             #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-            { "https://api.adoptium.net/v3/binary/latest/8/ga/mac/aarch64/jre/hotspot/normal/eclipse" }
+            {
+                "https://api.adoptium.net/v3/binary/latest/8/ga/mac/aarch64/jre/hotspot/normal/eclipse"
+            }
 
             #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
-            { "https://api.adoptium.net/v3/binary/latest/8/ga/linux/x64/jre/hotspot/normal/eclipse" }
+            {
+                "https://api.adoptium.net/v3/binary/latest/8/ga/linux/x64/jre/hotspot/normal/eclipse"
+            }
         }
 
         JavaVersion::Java17 => {
             #[cfg(target_os = "windows")]
-            { "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jre/hotspot/normal/eclipse" }
+            {
+                "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jre/hotspot/normal/eclipse"
+            }
 
             #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
-            { "https://api.adoptium.net/v3/binary/latest/17/ga/mac/x64/jre/hotspot/normal/eclipse" }
+            {
+                "https://api.adoptium.net/v3/binary/latest/17/ga/mac/x64/jre/hotspot/normal/eclipse"
+            }
 
             #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-            { "https://api.adoptium.net/v3/binary/latest/17/ga/mac/aarch64/jre/hotspot/normal/eclipse" }
+            {
+                "https://api.adoptium.net/v3/binary/latest/17/ga/mac/aarch64/jre/hotspot/normal/eclipse"
+            }
 
             #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
-            { "https://api.adoptium.net/v3/binary/latest/17/ga/linux/x64/jre/hotspot/normal/eclipse" }
+            {
+                "https://api.adoptium.net/v3/binary/latest/17/ga/linux/x64/jre/hotspot/normal/eclipse"
+            }
         }
 
         JavaVersion::Java21 => {
             #[cfg(target_os = "windows")]
-            { "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jre/hotspot/normal/eclipse" }
+            {
+                "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jre/hotspot/normal/eclipse"
+            }
 
             #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
-            { "https://api.adoptium.net/v3/binary/latest/21/ga/mac/x64/jre/hotspot/normal/eclipse" }
+            {
+                "https://api.adoptium.net/v3/binary/latest/21/ga/mac/x64/jre/hotspot/normal/eclipse"
+            }
 
             #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-            { "https://api.adoptium.net/v3/binary/latest/21/ga/mac/aarch64/jre/hotspot/normal/eclipse" }
+            {
+                "https://api.adoptium.net/v3/binary/latest/21/ga/mac/aarch64/jre/hotspot/normal/eclipse"
+            }
 
             #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
-            { "https://api.adoptium.net/v3/binary/latest/21/ga/linux/x64/jre/hotspot/normal/eclipse" }
+            {
+                "https://api.adoptium.net/v3/binary/latest/21/ga/linux/x64/jre/hotspot/normal/eclipse"
+            }
+        }
+
+        JavaVersion::Java25 => {
+            #[cfg(target_os = "windows")]
+            {
+                "https://api.adoptium.net/v3/binary/latest/25/ga/windows/x64/jre/hotspot/normal/eclipse"
+            }
+
+            #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+            {
+                "https://api.adoptium.net/v3/binary/latest/25/ga/mac/x64/jre/hotspot/normal/eclipse"
+            }
+
+            #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+            {
+                "https://api.adoptium.net/v3/binary/latest/25/ga/mac/aarch64/jre/hotspot/normal/eclipse"
+            }
+
+            #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+            {
+                "https://api.adoptium.net/v3/binary/latest/25/ga/linux/x64/jre/hotspot/normal/eclipse"
+            }
         }
     }
 }
@@ -102,15 +158,20 @@ fn installing_marker(base: &PathBuf, version: JavaVersion) -> PathBuf {
         JavaVersion::Java8 => base.join("8/.installing"),
         JavaVersion::Java17 => base.join("17/.installing"),
         JavaVersion::Java21 => base.join("21/.installing"),
+        JavaVersion::Java25 => base.join("25/.installing"),
     }
 }
 
 fn java_archive_path(base: &PathBuf) -> PathBuf {
     #[cfg(target_os = "windows")]
-    { base.join("java.zip") }
+    {
+        base.join("java.zip")
+    }
 
     #[cfg(not(target_os = "windows"))]
-    { base.join("java.tar.gz") }
+    {
+        base.join("java.tar.gz")
+    }
 }
 
 pub async fn install_java(base: &PathBuf, version: JavaVersion) -> Result<(), String> {
@@ -141,6 +202,7 @@ pub async fn install_java(base: &PathBuf, version: JavaVersion) -> Result<(), St
         JavaVersion::Java8 => target_dir.join("8"),
         JavaVersion::Java17 => target_dir.join("17"),
         JavaVersion::Java21 => target_dir.join("21"),
+        JavaVersion::Java25 => target_dir.join("25"),
     };
 
     fs::create_dir_all(&version_dir).map_err(|e| e.to_string())?;
@@ -156,10 +218,7 @@ pub async fn install_java(base: &PathBuf, version: JavaVersion) -> Result<(), St
             let rel = Path::new(file.name());
 
             // Strip the ZIP's top-level folder (e.g. jdk-17.x.x-jre/)
-            let rel = rel
-                .components()
-                .skip(1)
-                .collect::<PathBuf>();
+            let rel = rel.components().skip(1).collect::<PathBuf>();
 
             // Skip the root folder entry itself
             if rel.as_os_str().is_empty() {
@@ -260,6 +319,7 @@ fn cleanup_java(base: &PathBuf, version: JavaVersion) {
         JavaVersion::Java8 => base.join("8"),
         JavaVersion::Java17 => base.join("17"),
         JavaVersion::Java21 => base.join("21"),
+        JavaVersion::Java25 => base.join("25"),
     };
 
     let archive = java_archive_path(base);

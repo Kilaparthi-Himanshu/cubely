@@ -12,12 +12,15 @@ use zip::ZipArchive;
 /// Playit Binary Resolution
 fn playit_binary_name() -> &'static str {
     #[cfg(target_os = "windows")]
-    { "playit.exe" }
+    {
+        "playit.exe"
+    }
 
     #[cfg(not(target_os = "windows"))]
-    { "playit" }
+    {
+        "playit"
+    }
 }
-
 
 pub fn playit_binary(base: &PathBuf) -> PathBuf {
     base.join(playit_binary_name())
@@ -47,7 +50,6 @@ fn playit_download_url() -> &'static str {
 fn playit_download_url() -> &'static str {
     "https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-linux-aarch64"
 }
-
 
 /// Install Playit (transactional)
 #[cfg(target_os = "macos")]
@@ -203,9 +205,7 @@ fn playit_config_path() -> Option<PathBuf> {
     {
         // Try LOCALAPPDATA first
         if let Ok(local) = std::env::var("LOCALAPPDATA") {
-            let p = PathBuf::from(&local)
-                .join("playit_gg")
-                .join("playit.toml");
+            let p = PathBuf::from(&local).join("playit_gg").join("playit.toml");
             if p.exists() {
                 return Some(p);
             }
@@ -226,13 +226,13 @@ fn playit_config_path() -> Option<PathBuf> {
 
     #[cfg(target_os = "linux")]
     {
-        std::env::var("HOME")
-            .ok()
-            .map(|p| PathBuf::from(p)
+        std::env::var("HOME").ok().map(|p| {
+            PathBuf::from(p)
                 .join(".local")
                 .join("share")
                 .join("playit_gg")
-                .join("playit.toml"))
+                .join("playit.toml")
+        })
     }
 
     #[cfg(target_os = "macos")]
@@ -243,7 +243,8 @@ fn playit_config_path() -> Option<PathBuf> {
 
 fn read_playit_secret() -> Result<String, String> {
     let path = playit_config_path().ok_or("Unsupported OS for Playit")?;
-    let content = fs::read_to_string(&path).map_err(|e| format!("Failed to read Playit config: {}", e))?;
+    let content =
+        fs::read_to_string(&path).map_err(|e| format!("Failed to read Playit config: {}", e))?;
 
     for line in content.lines() {
         if let Some(rest) = line.strip_prefix("secret_key") {

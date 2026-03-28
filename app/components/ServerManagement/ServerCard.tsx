@@ -41,6 +41,15 @@ export const ServerCard = ({
 
     const router = useRouter();
 
+    const MAX_BLOCKS = 16;
+    const filledBlocks = Math.min(ram_gb, MAX_BLOCKS);
+
+    const loaderIcon = {
+        vanilla: "/vanilla_mc.png",
+        fabric: "/fabric_mc.png",
+        forge: "/forge_mc.png",
+    }[loader] ?? "/vanilla_mc.png";
+
     const handlePlayStop = async () => {
         try {
             if (isActive) {
@@ -69,7 +78,7 @@ export const ServerCard = ({
                 <ServerSettingsModal setIsOpen={setServerSettingsModalOpen} server={server} />
             </ModalRenderer>
 
-            <div className={`w-50 h-65 corner-squircle bg-neutral-800 flex flex-col overflow-hidden cursor-pointer relative shadow-md ${isMac ? 'rounded-[30px]' : 'rounded-[50px]'} ${isActive && 'border-2 border-green-500'} cyberpunk:bg-red-900/70 cyberpunk:rounded-none cyberpunk:rounded-tl-[40px] cyberpunk:corner-tl-bevel cyberpunk:rounded-br-[30px] cyberpunk:corner-br-bevel cyberpunk-border cyberpunk-glow`}>
+            <div className={`w-51 h-65 corner-squircle bg-neutral-800 flex flex-col overflow-hidden cursor-pointer relative shadow-md ${isMac ? 'rounded-[30px]' : 'rounded-[50px]'} ${isActive && 'border-2 border-green-500'} cyberpunk:bg-red-900/70 cyberpunk:rounded-none cyberpunk:rounded-tl-[40px] cyberpunk:corner-tl-bevel cyberpunk:rounded-br-[30px] cyberpunk:corner-br-bevel cyberpunk-border cyberpunk-glow`}>
                 <div className="absolute inset-0 flex flex-col pointer-events-none">
                     <button 
                         onClick={handlePlayStop}
@@ -118,7 +127,7 @@ export const ServerCard = ({
                         [-webkit-mask-image:linear-gradient(to_bottom,black_30%,transparent)]"
                     />
 
-                    <div className="flex-1 p-2 px-4 flex flex-col justify-center text-white cyberpunk:text-red-600 font-mono text-sm gap-1">
+                    <div className="flex-1 p-2 px-3 flex flex-col justify-center text-white cyberpunk:text-red-600 font-mono text-sm gap-1">
                         <p>
                             <span className="font-semibold">Name:</span>{" "}
                             <span className="text-amber-400 cyberpunk:text-cyber-blue">{name}</span>
@@ -127,14 +136,36 @@ export const ServerCard = ({
                             <span className="font-semibold">Version:</span>{" "}
                             <span className="text-amber-400 cyberpunk:text-cyber-blue">{version}</span>
                         </p>
-                        <p>
+                        <div>
                             <span className="font-semibold">Loader:</span>{" "}
-                            <span className="text-amber-400 cyberpunk:text-cyber-blue">{loader.charAt(0).toUpperCase() + loader.slice(1)}</span>
-                        </p>
-                        <p>
-                            <span className="font-semibold">RAM:</span>{" "}
-                            <span className="text-amber-400 cyberpunk:text-cyber-blue">{ram_gb}</span><span className="text-blue-300 cyberpunk:text-cyber-green"> GB</span>
-                        </p>
+                            <span className="text-amber-400 cyberpunk:text-cyber-blue">
+                                {loader.charAt(0).toUpperCase() + loader.slice(1)}
+                            </span>
+                            <img 
+                                className={`inline-block ml-1.5 size-5 align-middle ${loader === "vanilla" && 'w-6.5'}`} 
+                                src={loaderIcon}
+                            />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="font-semibold">RAM:</span>
+
+                            <div className="flex gap-0.5">
+                                {Array.from({ length: MAX_BLOCKS }).map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className={`w-1 h-1 rounded-sm ${
+                                            i < filledBlocks
+                                                ? "bg-green-500 cyberpunk:bg-cyber-green"
+                                                : "bg-neutral-700"
+                                        }`}
+                                    />
+                                ))}
+                            </div>
+
+                            <span className="text-blue-300 cyberpunk:text-cyber-green text-xs">
+                                {ram_gb} GB
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>

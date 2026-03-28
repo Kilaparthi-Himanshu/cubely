@@ -7,7 +7,9 @@ use tauri::Emitter;
 
 use crate::commands::java_manager::{install_java, java_binary, java_installed, require_java};
 use crate::commands::ngrok_manager::{install_ngrok, ngrok_binary, ngrok_installed, start_ngrok};
-use crate::commands::playit_manager::{get_playit_public_url, install_playit, playit_binary, playit_installed, start_playit};
+use crate::commands::playit_manager::{
+    get_playit_public_url, install_playit, playit_binary, playit_installed, start_playit,
+};
 use crate::{
     commands::server_creation::LoaderType, state::app_state::AppState, utils::path::servers_dir,
 };
@@ -129,34 +131,19 @@ pub fn read_server_properties(server_path: String) -> Result<ServerProperties, S
     let map = map_server_properties(&server_path)?;
 
     Ok(ServerProperties {
-        motd: map
-            .get("motd")
-            .cloned()
-            .unwrap_or_default(),
-        online_mode: map
-            .get("online-mode")
-            .map(|v| v == "true")
-            .unwrap_or(true),
+        motd: map.get("motd").cloned().unwrap_or_default(),
+        online_mode: map.get("online-mode").map(|v| v == "true").unwrap_or(true),
         max_players: map
             .get("max-players")
             .and_then(|v| v.parse().ok())
             .unwrap_or(20),
-        difficulty: map
-            .get("difficulty")
-            .cloned()
-            .unwrap_or("easy".into()),
-        gamemode: map
-            .get("gamemode")
-            .cloned()
-            .unwrap_or("survival".into()),
+        difficulty: map.get("difficulty").cloned().unwrap_or("easy".into()),
+        gamemode: map.get("gamemode").cloned().unwrap_or("survival".into()),
         force_gamemode: map
             .get("force-gamemode")
             .map(|v| v == "true")
             .unwrap_or(false),
-        pvp: map
-            .get("pvp")
-            .map(|v| v == "true")
-            .unwrap_or(true),
+        pvp: map.get("pvp").map(|v| v == "true").unwrap_or(true),
         spawn_protection: map
             .get("spawn-protection")
             .and_then(|v| v.parse().ok())
@@ -191,9 +178,15 @@ pub async fn update_server_properties(
     map.insert("gamemode".into(), props.gamemode);
     map.insert("force-gamemode".into(), props.force_gamemode.to_string());
     map.insert("pvp".into(), props.pvp.to_string());
-    map.insert("spawn-protection".into(), props.spawn_protection.to_string());
+    map.insert(
+        "spawn-protection".into(),
+        props.spawn_protection.to_string(),
+    );
     map.insert("view-distance".into(), props.view_distance.to_string());
-    map.insert("simulation-distance".into(), props.simulation_distance.to_string());
+    map.insert(
+        "simulation-distance".into(),
+        props.simulation_distance.to_string(),
+    );
     map.insert("server-port".into(), props.server_port.to_string());
 
     //  Write back EVERYTHING (including unknown keys)
@@ -317,9 +310,7 @@ pub async fn start_server(
     // lock once
     let java_base = {
         let guard = state.java_base_dir.lock().unwrap();
-        guard
-            .clone()
-            .ok_or("Java base directory not initialized")?
+        guard.clone().ok_or("Java base directory not initialized")?
     };
 
     if !java_installed(&java_base, java_version) {
@@ -339,16 +330,12 @@ pub async fn start_server(
 
     let ngrok_base = {
         let guard = state.ngrok_base_dir.lock().unwrap();
-        guard
-            .clone()
-            .ok_or("Ngrok base dir not initialized")?
+        guard.clone().ok_or("Ngrok base dir not initialized")?
     };
 
     let playit_base = {
         let guard = state.playit_base_dir.lock().unwrap();
-        guard
-            .clone()
-            .ok_or("Playit base dir not initialized")?
+        guard.clone().ok_or("Playit base dir not initialized")?
     };
 
     if !PathBuf::from(&server.path).exists() {
@@ -357,22 +344,20 @@ pub async fn start_server(
 
     // spawn minecraft
     let mut mc_child: Child = match server.loader {
-        LoaderType::Vanilla | LoaderType::Fabric => {
-            Command::new(java)
-                .args([
-                    format!("-Xmx{}G", server.ram_gb),
-                    format!("-Xms{}G", server.ram_gb),
-                    "-jar".into(),
-                    "server.jar".into(),
-                    "nogui".into(),
-                ])
-                .current_dir(&server.path)
-                .stdin(Stdio::piped())
-                .stdout(Stdio::piped())
-                .stderr(Stdio::piped())
-                .spawn()
-                .map_err(|e| e.to_string())?
-        }
+        LoaderType::Vanilla | LoaderType::Fabric => Command::new(java)
+            .args([
+                format!("-Xmx{}G", server.ram_gb),
+                format!("-Xms{}G", server.ram_gb),
+                "-jar".into(),
+                "server.jar".into(),
+                "nogui".into(),
+            ])
+            .current_dir(&server.path)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .map_err(|e| e.to_string())?,
 
         LoaderType::Forge => {
             let jar_name = find_forge_entry(&server.path)?;
@@ -397,9 +382,7 @@ pub async fn start_server(
     // Logging to frontend
     let app = {
         let guard = state.app_handle.lock().unwrap();
-        guard
-            .clone()
-            .ok_or("App handle not initialized")?
+        guard.clone().ok_or("App handle not initialized")?
     };
 
     if let Some(stdout) = mc_child.stdout.take() {
@@ -457,7 +440,7 @@ pub async fn start_server(
                             std::thread::spawn(move || {
                                 let reader = std::io::BufReader::new(stderr);
                                 for line in reader.lines().flatten() {
-                                    let _  = app.emit("playit-log", format!("[ERR] {}", line));
+                                    let _ = app.emit("playit-log", format!("[ERR] {}", line));
                                 }
                             });
                         }
@@ -465,10 +448,7 @@ pub async fn start_server(
 
                     let url = get_playit_public_url(app.clone()).await?;
 
-                    let _ = app.emit(
-                        "playit-log",
-                        format!("[PLAYIT] public url: {}", url),
-                    );
+                    let _ = app.emit("playit-log", format!("[PLAYIT] public url: {}", url));
 
                     public_url = Some(url);
                 }
@@ -559,10 +539,7 @@ pub fn stop_server(state: tauri::State<'_, AppState>) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn delete_server(
-    server_id: String,
-    state: tauri::State<'_, AppState>
-) -> Result<(), String> {
+pub fn delete_server(server_id: String, state: tauri::State<'_, AppState>) -> Result<(), String> {
     // Block deleting active server
     {
         let active = state.active_server.lock().unwrap();
@@ -595,15 +572,10 @@ pub fn delete_server(
 }
 
 #[tauri::command]
-pub fn send_mc_command(
-    command: String,
-    state: tauri::State<'_, AppState>,
-) -> Result<(), String> {
+pub fn send_mc_command(command: String, state: tauri::State<'_, AppState>) -> Result<(), String> {
     let mut active_server = state.active_server.lock().unwrap();
 
-    let server = active_server
-        .as_mut()
-        .ok_or("No active server running")?;
+    let server = active_server.as_mut().ok_or("No active server running")?;
 
     // Echo command to UI BEFORE sending
     if let Some(app) = state.app_handle.lock().unwrap().clone() {

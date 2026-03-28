@@ -24,10 +24,7 @@ pub fn set_idle() {
             let activity = activity::Activity::new()
                 .details("Cubely")
                 .state("Idle")
-                .assets(
-                    activity::Assets::new()
-                        .large_text("Cubely")
-                );
+                .assets(activity::Assets::new().large_text("Cubely"));
 
             let _ = rpc.set_activity(activity).ok();
         }
@@ -48,13 +45,8 @@ pub fn discord_set_server_running(server_name: String) {
             let activity = activity::Activity::new()
                 .details("Running Server")
                 .state(format!("MC - {}", server_name))
-                .timestamps(
-                    activity::Timestamps::new()
-                        .start(start_time))
-                .assets(
-                    activity::Assets::new()
-                        .small_text("Server Online")
-                );
+                .timestamps(activity::Timestamps::new().start(start_time))
+                .assets(activity::Assets::new().small_text("Server Online"));
 
             let _ = rpc.set_activity(activity).ok();
         }

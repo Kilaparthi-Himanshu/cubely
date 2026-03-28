@@ -4,23 +4,23 @@ pub mod commands;
 pub mod state;
 pub mod utils;
 
+use crate::commands::discord_rpc::{discord_set_server_running, init_discord_rpc, set_idle};
+use crate::commands::misc::open_folder;
 use crate::commands::server_creation::create_server;
+use crate::commands::server_management::delete_server;
 use crate::commands::server_management::get_active_server;
 use crate::commands::server_management::list_servers;
 use crate::commands::server_management::read_server_config;
-use crate::commands::server_management::update_server_config;
 use crate::commands::server_management::read_server_properties;
+use crate::commands::server_management::send_mc_command;
 use crate::commands::server_management::start_server;
 use crate::commands::server_management::stop_server;
+use crate::commands::server_management::update_server_config;
 use crate::commands::server_management::update_server_properties;
-use crate::commands::server_management::delete_server;
-use crate::commands::server_management::send_mc_command;
 use crate::commands::versions_loaders::fetch_fabric_versions;
 use crate::commands::versions_loaders::fetch_forge_versions;
 use crate::commands::versions_loaders::get_mc_versions;
 use crate::commands::versions_loaders::get_supported_loaders;
-use crate::commands::misc::open_folder;
-use crate::commands::discord_rpc::{init_discord_rpc, set_idle, discord_set_server_running};
 use crate::commands::versions_loaders::LoaderSupportCache;
 use crate::state::app_state::AppState;
 use tauri::Manager;
@@ -39,6 +39,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_window_state::Builder::default().build()) // To manage and remember app size and position and maximized or not
         .manage(AppState::default())
         .setup(|app| {
             // Start Discord Rich Presence
@@ -87,10 +88,7 @@ pub fn run() {
             {
                 let app_state = app.state::<AppState>();
 
-                let mut slot = app_state
-                    .java_base_dir
-                    .lock()
-                    .unwrap();
+                let mut slot = app_state.java_base_dir.lock().unwrap();
 
                 *slot = Some(java_base);
             }
@@ -105,10 +103,7 @@ pub fn run() {
             {
                 let app_state = app.state::<AppState>();
 
-                let mut slot = app_state
-                    .ngrok_base_dir
-                    .lock()
-                    .unwrap();
+                let mut slot = app_state.ngrok_base_dir.lock().unwrap();
 
                 *slot = Some(ngrok_base);
             }
@@ -123,10 +118,7 @@ pub fn run() {
             {
                 let app_state = app.state::<AppState>();
 
-                let mut slot = app_state
-                    .playit_base_dir
-                    .lock()
-                    .unwrap();
+                let mut slot = app_state.playit_base_dir.lock().unwrap();
 
                 *slot = Some(playit_base);
             }
