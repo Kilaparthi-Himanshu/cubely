@@ -17,6 +17,7 @@ import { AlertModalRenderer } from "../misc/AlertModal";
 import isEqual from "lodash.isequal";
 
 export type ServerProperties = {
+    level_name: string,
     motd: string,
     online_mode: boolean,
     max_players: number,
@@ -49,6 +50,9 @@ export const ServerSettingsModal = ({
     const DIFFICULTIES = ["peaceful", "easy", "normal", "hard"];
     const GAMEMODES = ["survival", "creative", "adventure", "spectator"];
 
+    const [worldExists, setWorldExists] = useState<boolean | null>(null);
+    const [checkingWorld, setCheckingWorld] = useState(false);
+
     const isMac = useAtomValue(isMacAtom);
     const [properties, setProperties] = useState<ServerProperties | null>(null);
     const [loading, setLoading] = useState(false);
@@ -58,6 +62,30 @@ export const ServerSettingsModal = ({
 
     const [initialProperties, setInitialProperties] = useState<ServerProperties | null>(null);
     const [initialConfig, setInitialConfig] = useState<ServerConfig | null>(null);
+
+    useEffect(() => {
+        if (!properties?.level_name) return;
+
+        setCheckingWorld(true);
+
+        const timeout = setTimeout(async () => {
+            try {
+                const exists = await invoke<boolean>("check_world_exists", {
+                    serverPath: server.path,
+                    worldName: properties.level_name,
+                });
+
+                setWorldExists(exists);
+            } catch (err) {
+                console.error(err);
+                setWorldExists(false);
+            } finally {
+                setCheckingWorld(false);
+            }
+        }, 400); // debounce
+
+        return () => clearTimeout(timeout);
+    }, [properties?.level_name]);
 
     useEffect(() => {
         async function getServerProperties() {
@@ -303,6 +331,43 @@ export const ServerSettingsModal = ({
                         <span className="text-xs text-gray-400">
                             Intance name cannot be changed after creation.
                         </span>
+                    </div>
+
+                    <div className="flex flex-col gap-3 w-1/2">
+                        <span>World Name:</span>
+
+                        <input 
+                            className="outline-0 border-2 focus:border-amber-400 transition-[border] corner-squircle rounded-[20px] p-2 min-h-11 h-11 max-h-50 app-scroll cyberpunk:rounded-none cyberpunk:rounded-br-xl cyberpunk:corner-br-bevel cyberpunk:focus:border-cyber-yellow"
+                            value={properties.level_name}
+                            onChange={(e) => {
+                                updatePropertyField("level_name", e.target.value);
+                            }}
+                        />
+
+                        {checkingWorld && (
+                            <span className="text-xs text-gray-400">
+                                Checking world...
+                            </span>
+                        )}
+
+                        {!checkingWorld && worldExists === true && (
+                            <span className="text-xs text-green-400">
+                                ✔ World exists, it will be loaded.
+                            </span>
+                        )}
+
+                        {!checkingWorld && worldExists === false && (
+                            <span className="text-xs text-amber-400">
+                                ⚠ A world with this name doesn't exist.
+                                A new one will be created on server start.
+                            </span>
+                        )}
+
+                        {initialProperties?.level_name !== properties.level_name && (
+                            <span className="text-xs text-red-400">
+                                ⚠ Changing world will switch the save folder.
+                            </span>
+                        )}
                     </div>
 
                     <div className="flex flex-col gap-3 w-1/2">

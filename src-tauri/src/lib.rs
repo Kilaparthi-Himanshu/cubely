@@ -17,6 +17,7 @@ use crate::commands::server_management::start_server;
 use crate::commands::server_management::stop_server;
 use crate::commands::server_management::update_server_config;
 use crate::commands::server_management::update_server_properties;
+use crate::commands::server_management::check_world_exists;
 use crate::commands::versions_loaders::fetch_fabric_versions;
 use crate::commands::versions_loaders::fetch_forge_versions;
 use crate::commands::versions_loaders::get_mc_versions;
@@ -144,7 +145,8 @@ pub fn run() {
             delete_server,
             send_mc_command,
             discord_set_server_running,
-            set_idle
+            set_idle,
+            check_world_exists
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

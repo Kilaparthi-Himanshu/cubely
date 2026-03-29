@@ -92,6 +92,7 @@ use std::time::Duration;
 
 #[derive(Serialize, Deserialize)]
 pub struct ServerProperties {
+    pub level_name: String,
     pub motd: String,
     pub online_mode: bool,
     pub max_players: u32,
@@ -131,6 +132,7 @@ pub fn read_server_properties(server_path: String) -> Result<ServerProperties, S
     let map = map_server_properties(&server_path)?;
 
     Ok(ServerProperties {
+        level_name: map.get("level-name").cloned().unwrap_or("world".into()),
         motd: map.get("motd").cloned().unwrap_or_default(),
         online_mode: map.get("online-mode").map(|v| v == "true").unwrap_or(true),
         max_players: map
@@ -171,6 +173,7 @@ pub async fn update_server_properties(
     let mut map = map_server_properties(&server_path)?;
 
     // Update only keys we control
+    map.insert("level-name".into(), props.level_name);
     map.insert("motd".into(), props.motd);
     map.insert("online-mode".into(), props.online_mode.to_string());
     map.insert("max-players".into(), props.max_players.to_string());
@@ -596,4 +599,10 @@ pub fn send_mc_command(command: String, state: tauri::State<'_, AppState>) -> Re
         .map_err(|e| e.to_string())?;
 
     Ok(())
+}
+
+#[tauri::command]
+pub fn check_world_exists(server_path: String, world_name: String) -> bool {
+    let path = PathBuf::from(server_path).join(world_name);
+    path.exists()
 }
