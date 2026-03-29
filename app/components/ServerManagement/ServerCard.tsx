@@ -129,9 +129,12 @@ export const ServerCard = ({
                     />
 
                     <div className="flex-1 p-2 px-3 flex flex-col justify-center text-white cyberpunk:text-red-600 font-mono text-sm gap-1">
-                        <p>
-                            <span className="font-semibold">Name:</span>{" "}
-                            <span className="text-amber-400 cyberpunk:text-cyber-blue">{name}</span>
+                        <p className="flex gap-2 items-center">
+                            <span className="font-semibold">Name:</span>
+
+                            <span className="text-amber-400 cyberpunk:text-cyber-blue truncate min-w-0 flex-1">
+                                {name}
+                            </span>
                         </p>
                         <p>
                             <span className="font-semibold">Version:</span>{" "}

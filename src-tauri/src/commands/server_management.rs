@@ -5,7 +5,7 @@ use playit_api_client::PlayitApi;
 use serde::{Deserialize, Serialize};
 use tauri::Emitter;
 
-use crate::commands::java_manager::{install_java, java_binary, java_installed, require_java};
+use crate::commands::java_manager::{JavaVersion};
 use crate::commands::ngrok_manager::{install_ngrok, ngrok_binary, ngrok_installed, start_ngrok};
 use crate::commands::playit_manager::{
     get_playit_public_url, install_playit, playit_binary, playit_installed, start_playit,
@@ -305,7 +305,7 @@ pub async fn start_server(
     } // <- mutex guard DROPPED here
 
     // Check and install if required java version is missing
-    let java_version = require_java(&server.version);
+    let java_version = JavaVersion::from_mc_version(&server.version);
 
     // lock once
     let java_base = {
@@ -313,11 +313,11 @@ pub async fn start_server(
         guard.clone().ok_or("Java base directory not initialized")?
     };
 
-    if !java_installed(&java_base, java_version) {
-        install_java(&java_base, java_version).await?;
+    if !java_version.java_installed(&java_base) {
+        java_version.install(&java_base).await?;
     }
 
-    let java = java_binary(&java_base, java_version);
+    let java = java_version.java_binary(&java_base);
 
     // println!("Java path: {}", java.display());
     // println!("Java exists: {}", java.exists());

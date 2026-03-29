@@ -58,16 +58,16 @@ const AlertModal = ({
             key={"xD"}
         >
             <motion.div 
-                className='w-120 h-60 bg-black border border-neutral-600 rounded-xl flex flex-col py-4 cyberpunk:rounded-none  cyberpunk:rounded-tr-2xl cyberpunk:corner-tr-bevel cyberpunk:rounded-tl-2xl cyberpunk:corner-tl-bevel cyberpunk:rounded-bl-2xl cyberpunk:corner-bl-bevel cyberpunk:bg-cyber-gray'
+                className='w-120 bg-black border border-neutral-600 rounded-xl flex flex-col cyberpunk:rounded-none  cyberpunk:rounded-tr-2xl cyberpunk:corner-tr-bevel cyberpunk:rounded-tl-2xl cyberpunk:corner-tl-bevel cyberpunk:rounded-bl-2xl cyberpunk:corner-bl-bevel cyberpunk:bg-cyber-gray'
                 onClick={(e) => e.stopPropagation()}
                 initial={{ y: -10 }}
                 animate={{ y: 0 }}
                 exit={{ y: -10 }}
                 transition={{ duration: 0.2 }}
             >
-                <div className='flex-3/4 flex flex-col items-center justify-center gap-2 text-2xl border-b border-neutral-600 pb-3'>
+                <div className='flex-3/4 p-4 flex flex-col items-center justify-center gap-2 text-2xl border-b border-neutral-600'>
                     <IoWarningOutline size={60} className='text-red-400 cyberpunk:text-cyber-purple' />
-                    <span className='cyberpunk:text-cyber-yellow'>{title}</span>
+                    <span className='w-full max-w-full cyberpunk:text-cyber-yellow text-center wrap-break-word'>{title}</span>
                     <span className='text-xl text-neutral-300 cyberpunk:text-cyber-dark-yellow'>{description}</span>
                 </div>
                 <div className='flex-1/4 flex items-center justify-end p-4 gap-2'>

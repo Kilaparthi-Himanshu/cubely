@@ -29,14 +29,17 @@ export const ActiveServerBanner = () => {
     return (
         <div className="w-full py-1 max-h-max bg-amber-400 text-black flex max-sm:flex-col max-md:items-start max-md:gap-4 items-center justify-between px-4 z-500 font-mono cyberpunk:bg-cyber-blue/70 cyberpunk-blue-border cyberpunk-blue-glow">
             <div className="text-green-800 cyberpunk:text-cyber-green font-semibold flex gap-2 items-center">
-                <span>
-                    Server running - Name: {activeServer.server_name}
+                <div className="flex gap-2 items-center min-w-0">
+                    Server running - Name: 
+                    <span className="truncate min-w-0 max-w-60">
+                        {activeServer.server_name}
+                    </span>
                     , Public Url: {
                         activeServer.public_url 
                         ? <span className="text-amber-800 cyberpunk:text-cyber-yellow">{activeServer.public_url}</span> 
                         : "No Public URL available"
                     }
-                </span>
+                </div>
 
                 {activeServer.public_url && 
                     <button

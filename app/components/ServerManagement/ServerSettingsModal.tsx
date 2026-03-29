@@ -624,6 +624,7 @@ export const ServerSettingsModal = ({
                     onConfirm={handleDeleteServer} 
                     confirmText="Delete"
                     confirmVariant="danger"
+                    title={`Deleting '${server.name}', are you sure?`}
                 />
 
                 <AlertModalRenderer 

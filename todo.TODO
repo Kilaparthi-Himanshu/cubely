@@ -4,7 +4,7 @@ Features:
     ✔ 3. Add game mode change. @done(26-02-22 17:13)
     ✔ 4. Add world name change. @done(26-02-22 17:13)
     ✔ 5. Make dual terminal setup. @done(26-02-22 14:59)
-    ☐ 6. Add Discord activity.
+    ✔ 6. Add Discord activity. @done(26-03-29 14:47)
 
 Fixes:
     ☐ 1. Swap server name with UUID in server path.

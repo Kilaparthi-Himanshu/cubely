@@ -33,6 +33,12 @@ pub fn set_idle() {
 
 #[tauri::command]
 pub fn discord_set_server_running(server_name: String) {
+    let server_name = if server_name.len() > 100 {
+        format!("{}...", &server_name[..100])
+    } else {
+        server_name
+    };
+
     let start_time = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
