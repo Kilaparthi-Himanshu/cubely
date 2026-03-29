@@ -450,7 +450,7 @@ export const ServerSettingsModal = ({
 
                         {/* Warning */}
                         {!properties.force_gamemode && (
-                            <span className="text-xs text-amber-400">
+                            <span className="text-xs text-red-400">
                                 ⚠ Changes won’t apply to existing players.
                                 Enable "Force Gamemode" to enforce it.
                             </span>
