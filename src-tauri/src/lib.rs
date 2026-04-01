@@ -43,6 +43,9 @@ pub fn run() {
         .plugin(tauri_plugin_window_state::Builder::default().build()) // To manage and remember app size and position and maximized or not
         .manage(AppState::default())
         .setup(|app| {
+            #[cfg(desktop)]
+            app.handle().plugin(tauri_plugin_updater::Builder::new().build());
+
             // Start Discord Rich Presence
             std::thread::spawn(|| {
                 // Discord client blocks briefly on connect, so keep it off main thread

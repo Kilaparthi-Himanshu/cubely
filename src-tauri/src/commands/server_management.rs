@@ -5,7 +5,7 @@ use playit_api_client::PlayitApi;
 use serde::{Deserialize, Serialize};
 use tauri::Emitter;
 
-use crate::commands::java_manager::{JavaVersion};
+use crate::commands::java_manager::JavaVersion;
 use crate::commands::ngrok_manager::{install_ngrok, ngrok_binary, ngrok_installed, start_ngrok};
 use crate::commands::playit_manager::{
     get_playit_public_url, install_playit, playit_binary, playit_installed, start_playit,

@@ -59,7 +59,7 @@ pub async fn install_playit(_: &PathBuf) -> Result<(), String> {
 
 #[cfg(not(target_os = "macos"))]
 pub async fn install_playit(base: &PathBuf) -> Result<(), String> {
-    fs::create_dir_all(base).map_err(|e| e.to_string())?;
+    fs::create_dir_all(base).map_err(|e: std::io::Error| e.to_string())?;
 
     let marker = installing_marker(base);
     fs::write(&marker, b"").ok();

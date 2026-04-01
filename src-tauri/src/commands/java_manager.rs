@@ -327,7 +327,10 @@ impl JavaVersion {
 /// Java Verification and Cleanup
 
 mod java_utils {
-    use std::{path::{Path, PathBuf}, process::Command};
+    use std::{
+        path::{Path, PathBuf},
+        process::Command,
+    };
 
     pub fn java_structure_ok(java_home: &Path) -> bool {
         #[cfg(target_os = "windows")]
