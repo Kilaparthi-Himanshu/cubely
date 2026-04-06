@@ -1,15 +1,17 @@
-import { activeServerAtom, showGlobalLoaderAtom, hideGlobalLoaderAtom } from "@/app/atoms";
+import { activeServerAtom, showGlobalLoaderAtom, hideGlobalLoaderAtom, settingsAtom } from "@/app/atoms";
 import { notifyError, notifySuccess } from "@/app/utils/alerts";
 import { stopServer } from "@/app/utils/server/serverActions";
 import { invoke } from "@tauri-apps/api/core";
 import { acceleratedValues } from "framer-motion";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 
 export const ActiveServerBanner = () => {
     const [activeServer, setActiveServer] = useAtom(activeServerAtom);
 
     const setGlobalShowLoader = useSetAtom(showGlobalLoaderAtom);
     const setHideGlobalLoader = useSetAtom(hideGlobalLoaderAtom);
+
+    const rpcEnabled = useAtomValue(settingsAtom).rpcEnabled;
 
     const handleCopy = async () => {
         if (!activeServer?.public_url) return;
@@ -56,7 +58,7 @@ export const ActiveServerBanner = () => {
                         active:scale-95 transition cyberpunk:bg-red-900/90 cyberpunk-border cyberpunk-glow cursor-pointer cyberpunk:rounded-none cyberpunk:rounded-tl-lg cyberpunk:corner-tl-bevel cyberpunk:rounded-br-lg cyberpunk:corner-br-bevel"
                 onClick={async () => {
                     try {
-                        await stopServer();
+                        await stopServer(rpcEnabled);
                     } catch (err) {
                         notifyError(err?.toString() ?? "Failed to start server");
                         console.error(err);

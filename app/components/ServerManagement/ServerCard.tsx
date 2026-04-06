@@ -1,6 +1,6 @@
 'use client';
 
-import { activeServerAtom, ActiveServerInfo, hideGlobalLoaderAtom, isMacAtom, ServerConfig, showGlobalLoaderAtom } from "@/app/atoms"
+import { activeServerAtom, ActiveServerInfo, hideGlobalLoaderAtom, isMacAtom, ServerConfig, settingsAtom, showGlobalLoaderAtom } from "@/app/atoms"
 import { invoke } from "@tauri-apps/api/core";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { FaCirclePlay } from "react-icons/fa6";
@@ -41,6 +41,8 @@ export const ServerCard = ({
     const setGlobalShowLoader = useSetAtom(showGlobalLoaderAtom);
     const setHideGlobalLoader = useSetAtom(hideGlobalLoaderAtom);
 
+    const rpcEnabled = useAtomValue(settingsAtom).rpcEnabled;
+
     const router = useRouter();
 
     const filledBlocks = Math.min(ram_gb, MAX_BLOCKS);
@@ -54,16 +56,21 @@ export const ServerCard = ({
     const handlePlayStop = async () => {
         try {
             if (isActive) {
-                await stopServer();
+                await stopServer(rpcEnabled);
             } else if (isAnotherRunning) {
                 notifyError("Another server is already running.");
             } else {
                 setGlobalShowLoader("Starting server...");
+
                 resetLogs(); // Reset old logs
+
                 const startedServer = await invoke<ActiveServerInfo>("start_server", { server });
                 setActiveServer(startedServer);
-                await invoke("discord_set_server_running", { serverName: server.name });
+
+                rpcEnabled && await invoke("discord_set_server_running", { serverName: server.name });
+
                 router.replace('/terminal');
+
             }
         } catch (err) {
             notifyError(err?.toString() ?? "Failed to start server");

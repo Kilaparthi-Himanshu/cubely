@@ -141,26 +141,25 @@ pub fn playit_installed(base: &PathBuf) -> bool {
 use std::os::windows::process::CommandExt;
 
 #[cfg(windows)]
-const CREATE_NEW_CONSOLE: u32 = 0x00000010;
-
-#[cfg(windows)]
 pub fn start_playit(base: &PathBuf) -> Result<Child, String> {
     let bin = playit_binary(base);
 
-    // let child = Command::new(bin)
-    //     .creation_flags(CREATE_NEW_CONSOLE)
-    //     .spawn()
-    //     .map_err(|e| e.to_string())?;
+    let mut cmd = Command::new(bin);
 
-    let child = Command::new(bin)
-        .current_dir(base)
+    cmd.current_dir(base)
         .args(["--stdout", "start"])
         .env("RUST_LOG", "info")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|e| e.to_string())?;
+        .stderr(Stdio::piped());
+
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        cmd.creation_flags(0x08000000); // NO WINDOW
+    }
+
+    let child = cmd.spawn().map_err(|e| e.to_string())?;
 
     Ok(child)
 }

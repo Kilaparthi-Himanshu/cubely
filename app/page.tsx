@@ -65,7 +65,7 @@ export default function Home() {
                     style={{ backgroundImage: "url('/cubely_logo.png')" }}
                 />
 
-                <div className={`bg-neutral-950/75 cyberpunk:bg-linear-to-br cyberpunk:from-red-950 cyberpunk:to-neutral-950 cyberpunk:backdrop-blur-2xl cyberpunk:border cyberpunk:border-red-500/30 cyberpunk:shadow-[0_0_40px_rgba(255,0,80,0.25)] w-full h-full flex p-4 gap-4 flex-wrap content-start app-scroll relative overflow-auto`}>
+                <div className={`bg-neutral-950/75 cyberpunk:bg-linear-to-br cyberpunk:from-red-950/75 cyberpunk:to-neutral-950/75 cyberpunk:border cyberpunk:border-red-500/30 cyberpunk:shadow-[0_0_40px_rgba(255,0,80,0.25)] w-full h-full flex p-4 gap-4 flex-wrap content-start app-scroll relative overflow-auto`}>
 
                     <ServerCreateCard setIsOpen={setServerCreateModalOpen} />
 

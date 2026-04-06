@@ -4,9 +4,10 @@ import { getDefaultStore } from "jotai";
 
 const store = getDefaultStore();
 
-export async function stopServer() {
+export async function stopServer(rpcEnabled: boolean) {
     store.set(showGlobalLoaderAtom, "Stopping server...");
     await invoke("stop_server");
     store.set(activeServerAtom, null);
-    await invoke("set_idle");
+
+    rpcEnabled && await invoke("set_idle");
 }

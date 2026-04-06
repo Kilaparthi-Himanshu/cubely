@@ -28,7 +28,7 @@ export const serversAtom = atom<ServerConfig[] | null>(null);
 export const activeServerAtom = atom<ActiveServerInfo | null>(null);
 
 export type GlobalLoaderState = {
-    visible: boolean;
+    visible: boolean; 
     message?: string;
 }
 export const globalLoaderAtom = atom<GlobalLoaderState>({
@@ -51,3 +51,13 @@ export const hideGlobalLoaderAtom = atom(
 export const mcLogsAtom = atom<string[]>([]);
 
 export const playitLogsAtom = atom<string[]>([]);
+
+export type AppSettings = {
+    theme: "default" | "cyberpunk",
+    rpcEnabled: boolean,
+}
+
+export const settingsAtom  = atom<AppSettings>({
+    theme: "default",
+    rpcEnabled: false,
+});

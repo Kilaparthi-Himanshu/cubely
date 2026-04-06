@@ -58,3 +58,11 @@ pub fn discord_set_server_running(server_name: String) {
         }
     }
 }
+
+#[tauri::command]
+pub fn clear_rpc() {
+    if let Some(rpc) = RPC.get() {
+        let mut rpc = rpc.lock().unwrap();
+        let _ = rpc.clear_activity();
+    }
+}

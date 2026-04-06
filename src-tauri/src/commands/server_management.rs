@@ -14,6 +14,9 @@ use crate::{
     commands::server_creation::LoaderType, state::app_state::AppState, utils::path::servers_dir,
 };
 
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+
 /// READING AND WRITING OF SERVERS
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -346,41 +349,43 @@ pub async fn start_server(
     }
 
     // spawn minecraft
-    let mut mc_child: Child = match server.loader {
-        LoaderType::Vanilla | LoaderType::Fabric => Command::new(java)
-            .args([
+    let mut cmd = Command::new(java);
+
+    match server.loader {
+        LoaderType::Vanilla | LoaderType::Fabric => {
+            cmd.args([
                 format!("-Xmx{}G", server.ram_gb),
                 format!("-Xms{}G", server.ram_gb),
                 "-jar".into(),
                 "server.jar".into(),
                 "nogui".into(),
-            ])
-            .current_dir(&server.path)
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .map_err(|e| e.to_string())?,
+            ]);
+        }
 
         LoaderType::Forge => {
             let jar_name = find_forge_entry(&server.path)?;
 
-            Command::new(java)
-                .args([
+            cmd.args([
                     format!("-Xmx{}G", server.ram_gb),
                     format!("-Xms{}G", server.ram_gb),
                     "-jar".into(),
                     jar_name,
                     "nogui".into(),
-                ])
-                .current_dir(&server.path)
-                .stdin(Stdio::piped())
-                .stdout(Stdio::piped())
-                .stderr(Stdio::piped())
-                .spawn()
-                .map_err(|e| e.to_string())?
+                ]);
         }
     };
+
+    cmd.current_dir(&server.path)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+
+    #[cfg(target_os = "windows")]
+    {
+        cmd.creation_flags(0x08000000); // NO TERMINAL WINDOW
+    }
+
+    let mut mc_child: Child = cmd.spawn().map_err(|e| e.to_string())?;
 
     // Logging to frontend
     let app = {

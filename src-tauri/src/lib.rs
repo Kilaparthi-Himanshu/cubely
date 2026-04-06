@@ -4,7 +4,7 @@ pub mod commands;
 pub mod state;
 pub mod utils;
 
-use crate::commands::discord_rpc::{discord_set_server_running, init_discord_rpc, set_idle};
+use crate::commands::discord_rpc::{discord_set_server_running, init_discord_rpc, set_idle, clear_rpc};
 use crate::commands::misc::open_folder;
 use crate::commands::server_creation::create_server;
 use crate::commands::server_management::delete_server;
@@ -41,6 +41,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_window_state::Builder::default().build()) // To manage and remember app size and position and maximized or not
+        .plugin(tauri_plugin_process::init())
         .manage(AppState::default())
         .setup(|app| {
             #[cfg(desktop)]
@@ -50,7 +51,7 @@ pub fn run() {
             std::thread::spawn(|| {
                 // Discord client blocks briefly on connect, so keep it off main thread
                 init_discord_rpc();
-                set_idle();
+                // set_idle();
             });
 
             if cfg!(debug_assertions) {
@@ -149,6 +150,7 @@ pub fn run() {
             send_mc_command,
             discord_set_server_running,
             set_idle,
+            clear_rpc,
             check_world_exists
         ])
         .run(tauri::generate_context!())

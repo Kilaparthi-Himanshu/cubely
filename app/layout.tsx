@@ -5,6 +5,8 @@ import { Sidebar } from "./components/Sidebar/Sidebar";
 import { Titlebar } from "./components/Titlebar";
 import { TauriPlatformInit } from "./utils/tauriPlatformInit";
 import { ToastContainer } from "react-toastify";
+import { UpdateGate } from "./components/misc/UpdateGate";
+import { SettingsInitializer } from "./components/misc/SettingsInitializer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,27 +30,6 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" className="h-full" suppressHydrationWarning>
-            <head>
-                <script
-                    dangerouslySetInnerHTML={{
-                        __html: `
-                        (function() {
-                            try {
-                                const stored = localStorage.getItem("theme");
-                                if (stored) {
-                                    document.documentElement.dataset.theme = stored;
-                                } else {
-                                    document.documentElement.dataset.theme = "default";
-                                }
-                            } catch(e) {
-                                document.documentElement.dataset.theme = "default";
-                            }
-                        })();
-                        `,
-                    }}
-                />
-            </head>
-
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-col overflow-hidden bg-neutral-950`}
             >
@@ -56,10 +37,15 @@ export default function RootLayout({
                     style={{ marginTop: "40px" }}
                 />
                 <TauriPlatformInit />
+                <SettingsInitializer />
+
                 <Titlebar />
-                <div className="flex flex-row flex-1 overflow-hidden">
-                    <Sidebar />
-                    {children}
+
+                <div className="flex flex-row flex-1 overflow-hidden relative">
+                    <UpdateGate>
+                        <Sidebar />
+                        {children}
+                    </UpdateGate>
                 </div>
             </body>
         </html>

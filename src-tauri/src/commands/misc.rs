@@ -1,4 +1,4 @@
-use std::process::Command;
+use std::{path::Path, process::Command};
 
 #[tauri::command]
 pub fn open_folder(path: String) {
