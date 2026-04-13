@@ -87,9 +87,15 @@ export const UpdateGate = ({ children }: { children: React.ReactNode }) => {
                             break;
 
                         case "Finished":
-                            setProgress(100);
-                            setStatus("done");
-                            break;
+                            setProgress(95); // stop before full
+
+                            setTimeout(() => {
+                                setProgress(100);
+                            }, 400);
+
+                            setTimeout(() => {
+                                // NOW let app close naturally
+                            }, 800);
                     }
                 });
 
