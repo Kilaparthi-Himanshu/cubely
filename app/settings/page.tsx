@@ -6,6 +6,7 @@ import { useAtom, useAtomValue } from 'jotai';
 import { activeServerAtom, AppSettings, settingsAtom } from '../atoms';
 import { invoke } from '@tauri-apps/api/core';
 import { SwitchToggle } from '../components/misc/Switch';
+import { getVersion } from '@tauri-apps/api/app';
 
 export default function Page() {
     const THEMES = ["default", "cyberpunk"] as const;
@@ -13,6 +14,11 @@ export default function Page() {
 
     const [settings, setSettings] = useAtom(settingsAtom);
     const activeServer = useAtomValue(activeServerAtom);
+    const [version, setVersion] = useState("");
+
+    useEffect(() => {
+        getVersion().then(setVersion);
+    }, []);
 
     const updateTheme = (value: Theme) => {
         setSettings(prev => ({
@@ -46,7 +52,11 @@ export default function Page() {
 
     return (
         <div className='bg-neutral-950 cyberpunk:bg-linear-to-br cyberpunk:from-red-950 cyberpunk:to-neutral-950 cyberpunk:backdrop-blur-2xl cyberpunk:border cyberpunk:border-red-500/30 cyberpunk:shadow-[0_0_40px_rgba(255,0,80,0.25)] w-full h-full flex flex-col items-center'>
-            <div className='w-full max-w-225 h-full border-x border-neutral-500 cyberpunk:border-red-500/30 cyberpunk:shadow-[0_0_40px_rgba(255,0,80,0.25)] flex flex-col p-8 font-semibold'>
+            <div className='w-full max-w-225 h-full border-x border-neutral-500 cyberpunk:border-red-500/30 cyberpunk:shadow-[0_0_40px_rgba(255,0,80,0.25)] flex flex-col p-8 font-semibold relative'>
+                <span className="absolute bottom-2 right-4 text-md text-gray-500">
+                    v{version}
+                </span>
+
                 <span className='text-3xl font-bold font-mono border-b border-neutral-500 cyberpunk:border-red-500/30 pb-2 cyberpunk:rounded-br-[20px] cyberpunk:corner-br-bevel'>Settings</span>
 
                 <div className='flex flex-col gap-8 pt-8'>
