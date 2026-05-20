@@ -1,10 +1,11 @@
 'use client';
 
-import { activeServerAtom, mcLogsAtom, playitLogsAtom } from "@/app/atoms";
+import { activeServerAtom, hideGlobalLoaderAtom, mcLogsAtom, playitLogsAtom } from "@/app/atoms";
 import { notifyError } from "@/app/utils/alerts";
+import { stopServer } from "@/app/utils/server/serverActions";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useRef, useState } from "react";
 
 type LogTypes = "mc-log" | "playit-log";
@@ -24,6 +25,7 @@ export function TerminalPane({ eventName }: { eventName: LogTypes }) {
     const shouldAutoScroll = useRef(true);
     const activeServer = useAtomValue(activeServerAtom);
     const [input, setInput] = useState('');
+    const setHideGlobalLoader = useSetAtom(hideGlobalLoaderAtom);
 
     useEffect(() => {
         let unlisten: any;
@@ -76,12 +78,21 @@ export function TerminalPane({ eventName }: { eventName: LogTypes }) {
     const sendCommand = async () => {
         if (!input.trim()) return;
 
+        const cmd = input.trim().toLowerCase();
+
         try {
-            await invoke("send_mc_command", { command: input });
+            if (cmd === "/stop" || cmd === "stop") {
+                await stopServer();
+            } else {
+                await invoke("send_mc_command", { command: input });
+            }
+
             setInput("");
         } catch (e) {
             notifyError(e?.toString() ?? "Unable to execute the command. Please try again.");
             console.error(e);
+        } finally {
+            setHideGlobalLoader();
         }
     }
 

@@ -5,6 +5,12 @@ Features:
     ✔ 4. Add world name change. @done(26-02-22 17:13)
     ✔ 5. Make dual terminal setup. @done(26-02-22 14:59)
     ✔ 6. Add Discord activity. @done(26-03-29 14:47)
+    ☐ 7. Select existing server.
 
 Fixes:
-    ☐ 1. Swap server name with UUID in server path.
+    ☐ 1. If error happens for example in playit or mc other stays alive even tho UI says error.
+    ☐ 2. Swap server name with UUID in server path.
+    ✔ 3. Make sure server and playit closes after app is closed. @done(26-05-20 16:33)
+    ☐ 4. Make sure Check for updates isn't forever when no internet connection.
+    ☐ 5. The logs are not being written if the terminal pane isn't in view.
+    ☐ 6. Click stop server too quickly, the app hangs.

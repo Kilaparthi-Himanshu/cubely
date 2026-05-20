@@ -147,7 +147,6 @@ pub fn start_playit(base: &PathBuf) -> Result<Child, String> {
     let mut cmd = Command::new(bin);
 
     cmd.current_dir(base)
-        .args(["--stdout", "start"])
         .env("RUST_LOG", "info")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())

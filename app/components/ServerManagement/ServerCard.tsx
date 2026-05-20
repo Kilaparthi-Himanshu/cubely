@@ -56,7 +56,7 @@ export const ServerCard = ({
     const handlePlayStop = async () => {
         try {
             if (isActive) {
-                await stopServer(rpcEnabled);
+                await stopServer();
             } else if (isAnotherRunning) {
                 notifyError("Another server is already running.");
             } else {
@@ -82,7 +82,7 @@ export const ServerCard = ({
 
     return (
         <>
-            <ModalRenderer isOpen={serverSettingsModalOpen}>
+            <ModalRenderer isOpen={serverSettingsModalOpen} onClose={() => setServerSettingsModalOpen(false)}>
                 <ServerSettingsModal setIsOpen={setServerSettingsModalOpen} server={server} />
             </ModalRenderer>
 

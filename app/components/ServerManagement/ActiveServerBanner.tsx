@@ -58,9 +58,9 @@ export const ActiveServerBanner = () => {
                         active:scale-95 transition cyberpunk:bg-red-900/90 cyberpunk-border cyberpunk-glow cursor-pointer cyberpunk:rounded-none cyberpunk:rounded-tl-lg cyberpunk:corner-tl-bevel cyberpunk:rounded-br-lg cyberpunk:corner-br-bevel"
                 onClick={async () => {
                     try {
-                        await stopServer(rpcEnabled);
+                        await stopServer();
                     } catch (err) {
-                        notifyError(err?.toString() ?? "Failed to start server");
+                        notifyError(err?.toString() ?? "Failed to stop server");
                         console.error(err);
                     } finally {
                         setHideGlobalLoader();

@@ -1,9 +1,10 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { IoWarningOutline } from 'react-icons/io5';
 import { notifyError } from '@/app/utils/alerts';
+
 type AlertModalProps = {
     isOpen?: boolean;
     setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -30,7 +31,7 @@ const AlertModal = ({
     const confirmStyles = {
         danger: 'bg-red-900 rounded-lg border border-red-500 px-6 py-2 text-white active:scale-95 active:bg-red-500/40 transition-[scale,background] cursor-pointer cyberpunk:rounded-none cyberpunk:rounded-br-2xl cyberpunk:corner-br-bevel',
         warning: 'bg-yellow-700 border-yellow-400 active:bg-yellow-500/40 rounded-lg border px-6 py-2 text-white active:scale-95 transition-[scale,background] cursor-pointer cyberpunk:rounded-none cyberpunk:rounded-br-2xl cyberpunk:corner-br-bevel',
-        default: 'bg-neutral-700 border-neutral-500'
+        default: 'bg-green-700 rounded-lg border border-green-500 px-6 py-2 text-white active:scale-95 active:bg-green-500/40 transition-[scale,background] cursor-pointer cyberpunk:rounded-none cyberpunk:rounded-br-2xl cyberpunk:corner-br-bevel'
     }
 
     const handleConfirm = async () => {

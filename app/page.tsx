@@ -73,7 +73,7 @@ export default function Home() {
                         <ServerCard server={server} key={server.id} />
                     ))}
 
-                    <ModalRenderer isOpen={serverCreateModalOpen}> {/* This allows for smoother fade out */}
+                    <ModalRenderer isOpen={serverCreateModalOpen} onClose={() => setServerCreateModalOpen(false)}> {/* This allows for smoother fade out */}
                         <ServerCreateModal setIsOpen={setServerCreateModalOpen} versions={serverVersions} />
                     </ModalRenderer>
 

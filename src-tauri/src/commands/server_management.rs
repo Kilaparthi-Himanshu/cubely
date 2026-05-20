@@ -526,6 +526,7 @@ pub fn stop_server(state: tauri::State<'_, AppState>) -> Result<(), String> {
     if let Some(mut server) = active.take() {
         if let Some(stdin) = server.mc_child.stdin.as_mut() {
             use std::io::Write;
+            stdin.write_all(b"save-all flush\n").ok();
             stdin.write_all(b"stop\n").ok();
         }
 

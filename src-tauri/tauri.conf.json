@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "cubely",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "identifier": "com.cubely.dev",
   "build": {
     "frontendDist": "../out",
@@ -20,7 +20,8 @@
         "resizable": true,
         "fullscreen": false,
         "transparent": true,
-        "decorations": false
+        "decorations": true,
+        "visible": false
       }
     ],
     "security": {
@@ -28,6 +29,11 @@
     }
   },
   "bundle": {
+    "windows": {
+      "nsis": {
+        "installerIcon": "icons/icon.ico"
+      }
+    },
     "active": true,
     "targets": "all",
     "icon": [

@@ -24,7 +24,7 @@ use crate::commands::versions_loaders::get_mc_versions;
 use crate::commands::versions_loaders::get_supported_loaders;
 use crate::commands::versions_loaders::LoaderSupportCache;
 use crate::state::app_state::AppState;
-use tauri::Manager;
+use tauri::{Listener, Manager, RunEvent, Emitter, WindowEvent};
 
 pub mod transparent;
 use crate::transparent::apply_window_effects;
@@ -44,6 +44,42 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .manage(AppState::default())
         .setup(|app| {
+            let window = app.get_webview_window("main").unwrap();
+
+            // Listen for frontend ready signal
+            let window_clone = window.clone();
+            window.listen("app-ready", move |_| {
+                window_clone.show().unwrap();
+                window_clone.set_focus().unwrap();
+            });
+
+            let app_handle = app.handle().clone();
+
+            window.on_window_event(move |event| {
+                if let WindowEvent::CloseRequested { api, .. } = event {
+
+                    let state = app_handle.state::<AppState>();
+                    let active = state.active_server.lock().unwrap();
+
+                    if active.is_some() {
+                        api.prevent_close();
+
+                        // Focus Cubely as modal pops up
+                        if let Some(window) = app_handle.get_webview_window("main") {
+                            let _ = window.unminimize();
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                        }
+
+                        if let Some(handle) =
+                        state.app_handle.lock().unwrap().as_ref()
+                        {
+                            let _ = handle.emit("confirm_close", ());
+                        }
+                    }
+                }
+            });
+
             #[cfg(desktop)]
             app.handle().plugin(tauri_plugin_updater::Builder::new().build());
 
@@ -153,6 +189,32 @@ pub fn run() {
             clear_rpc,
             check_world_exists
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(move |app_handle, event| {
+            match event {
+                RunEvent::ExitRequested { api, .. } => {
+                    let state = app_handle.state::<AppState>();
+                    let active = state.active_server.lock().unwrap();
+
+                    // Server running?
+                    if active.is_some() {
+                        // Stop Close
+                        api.prevent_exit();
+
+                        // Focus Cubely as modal pops up
+                        if let Some(window) = app_handle.get_webview_window("main") {
+                            let _ = window.unminimize();
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                        }
+
+                        // Ask frontend to show confirmation modal
+                        let _ = app_handle.emit("confirm_close", ());
+                    }
+                }
+
+                _ => {}
+            }
+        });
 }

@@ -7,6 +7,7 @@ import { TauriPlatformInit } from "./utils/tauriPlatformInit";
 import { ToastContainer } from "react-toastify";
 import { UpdateGate } from "./components/misc/UpdateGate";
 import { SettingsInitializer } from "./components/misc/SettingsInitializer";
+import CloseGuard from "./components/misc/CloseGuard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,6 +44,7 @@ export default function RootLayout({
 
                 <div className="flex flex-row flex-1 overflow-hidden relative">
                     <UpdateGate>
+                        <CloseGuard />
                         <Sidebar />
                         {children}
                     </UpdateGate>
