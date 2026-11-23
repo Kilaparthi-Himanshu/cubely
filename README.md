@@ -12,6 +12,7 @@ Create Vanilla, Fabric, or Forge servers in clicks — with automatic Java manag
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64-0078D6?style=flat-square&logo=windows)](https://github.com/Kilaparthi-Himanshu/cubely/releases/download/v1.0.0/cubely_1.0.0_x64-setup.exe)
 [![Built with Tauri](https://img.shields.io/badge/Built%20with-Tauri%20v2-24C8DB?style=flat-square&logo=tauri&logoColor=white)](https://tauri.app/)
 [![Next.js](https://img.shields.io/badge/Frontend-Next.js-000000?style=flat-square&logo=nextdotjs)](https://nextjs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-48b840?style=flat-square)](./LICENSE)
 
 [**Download v1.0.0 for Windows (x64)**](https://github.com/Kilaparthi-Himanshu/cubely/releases/download/v1.0.0/cubely_1.0.0_x64-setup.exe) · [**Releases**](https://github.com/Kilaparthi-Himanshu/cubely/releases) · [**Report a Bug**](https://github.com/Kilaparthi-Himanshu/cubely/issues)
 
